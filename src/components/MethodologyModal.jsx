@@ -46,6 +46,41 @@ const steps = [
     "Model interpretation",
     "The Visuals section translates the standardized profile into an observation, supporting evidence, a defensible conclusion and an explicit limitation. The interpretation is deterministic and based only on the model outputs shown in the app.",
   ],
+  [
+    "09",
+    "Player Style Map",
+    "Principal component analysis compresses the ten standardized features into two display dimensions. Players close together on the map have similar overall statistical shapes, but the two-dimensional map is only a summary of the full feature space.",
+  ],
+  [
+    "10",
+    "Data-driven archetypes",
+    "K-means clustering groups players in the same standardized, weighted ten-feature space. The archetype labels are generated from each cluster's strongest traits and position mix, so they describe patterns found in the current data rather than fixed basketball identities.",
+  ],
+  [
+    "11",
+    "Historical development",
+    "The Trends view compares the same player across multiple regular seasons using the selected Per Game, Per 36 or Per 100 stat basis. The trend is descriptive: changes may reflect development, role, minutes, health, teammates or team context.",
+  ],
+  [
+    "12",
+    "Similarity over time",
+    "Historical pair similarity is recalculated separately inside each season after standardizing against that season's eligible league. This makes the year-to-year comparison league-relative instead of applying one modern league baseline to every season.",
+  ],
+  [
+    "13",
+    "Historical archetype journey",
+    "For each eligible season, PlayerMatch reruns the data-driven archetype analysis against that season's league. A changing label is treated as evidence of a changing statistical profile, not proof that a player's basketball role changed for one specific reason.",
+  ],
+  [
+    "14",
+    "Next-season projection",
+    "The Outlook model predicts next-season points, rebounds, assists, true shooting percentage and usage rate from current production, age, playing time and recent season-to-season changes. The model never sees future-season inputs when creating a historical training example.",
+  ],
+  [
+    "15",
+    "Time-based model evaluation",
+    "PlayerMatch selects between a persistence baseline, Ridge Regression and Gradient Boosting using expanding-window validation. The latest observed season is then held out for a final backtest. The displayed error band is based on historical absolute validation errors and is not a formal confidence interval.",
+  ],
 ];
 
 export default function MethodologyModal({

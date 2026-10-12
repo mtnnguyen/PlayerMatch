@@ -1,38 +1,92 @@
-# PlayerMatch V3
+# PlayerMatch V5
 
-## Product direction
+PlayerMatch is an NBA similarity, visual analytics, player-development and predictive-modelling project.
 
-PlayerMatch V3 is designed like an analyst presenting to a basketball decision-maker:
+## Product philosophy
 
-1. show the result
-2. show the evidence
-3. explain what it means in plain language
-4. state the limitation
-5. keep technical model controls available but out of the default workflow
+The technical work happens underneath.
 
-## Views
+The user-facing product answers:
+
+```text
+Who is similar?
+Why?
+Where are they different?
+How unusual are the numbers?
+What kind of player is this?
+How has the profile changed?
+What does the historical evidence suggest next?
+How accurate has the model actually been?
+What should we not conclude?
+```
+
+## Analytics progression
+
+PlayerMatch now demonstrates:
+
+```text
+NBA Stats API ingestion
+data cleaning
+feature engineering
+league standardization
+percentiles
+weighted cosine similarity
+model explainability
+sensitivity analysis
+interactive scatter analysis
+distributions
+PCA
+K-means clustering
+data-driven archetypes
+multi-season trend analysis
+historical similarity
+historical archetype movement
+supervised regression
+time-based validation
+baseline comparison
+held-out backtesting
+feature importance
+next-season projections
+empirical error bands
+```
+
+## Main views
 
 ### Matchup
-The visual home screen and player-selection workflow.
+Fast player-to-player comparison.
 
 ### Analysis
-Detailed evidence: raw stats, league percentiles, model contribution and sensitivity.
+Evidence behind the comparison.
 
 ### Visuals
-League-relative player profiles expressed in human language. Standardized z-scores remain available as methodology rather than requiring statistical knowledge from the user.
+League profile, scatter, distributions, model drivers, PCA Style Map and data-driven archetypes.
+
+### Trends
+Historical player development and pair similarity.
+
+### Outlook
+Next-season projections, archetype journey and model-performance reporting.
 
 ### Model
-Advanced controls and custom weighting.
+Control how statistical similarity is defined.
 
-## Current model
+## V5 prediction principle
 
-- 10 statistical features
-- league z-score standardization
-- weighted cosine similarity
-- Per Game / Per 36 / Per 100
-- player-pool filtering
-- deterministic model interpretation
+PlayerMatch does not assume machine learning is automatically better.
 
-## Future V3 work
+Every target is compared against:
 
-The next major modelling step should use historical seasons before adding true forecasts. That can support trend analysis, aging curves and eventually a defensible projection screen.
+```text
+next season = current season
+```
+
+If a simple baseline is strongest during time-based model selection, the product reports that result.
+
+See:
+
+```text
+MODEL_CARD_V5.md
+V5_SETUP.md
+```
+
+for the complete methodology and setup.

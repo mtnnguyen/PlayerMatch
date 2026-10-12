@@ -109,7 +109,7 @@ export function buildDecisionBrief({
         : "This is better used as a reference point than as a direct substitute comparison.",
 
     forecast:
-      "PlayerMatch is not forecasting future production yet. A real projection needs multiple seasons of historical data, age and trend information.",
+      "Historical trends are available in Trends, while backtested next-season estimates live in Outlook. Projections should be read together with the model-performance and historical-error information.",
   };
 }
 

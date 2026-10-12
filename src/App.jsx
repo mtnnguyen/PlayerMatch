@@ -5,6 +5,8 @@ import Header from "./components/Header";
 import MatchupView from "./components/MatchupView";
 import MethodologyModal from "./components/MethodologyModal";
 import ModelView from "./components/ModelView";
+import OutlookView from "./components/OutlookView";
+import TrendsView from "./components/TrendsView";
 import VisualsView from "./components/VisualsView";
 
 import { STAT_BASES } from "./config/viewConfig";
@@ -66,6 +68,22 @@ export default function App() {
 
         {activeView === "visuals" && (
           <VisualsView
+            model={model}
+            statBasisLabel={statBasisLabel}
+            onEditMatchup={() => setActiveView("matchup")}
+          />
+        )}
+
+        {activeView === "trends" && (
+          <TrendsView
+            model={model}
+            statBasisLabel={statBasisLabel}
+            onEditMatchup={() => setActiveView("matchup")}
+          />
+        )}
+
+        {activeView === "outlook" && (
+          <OutlookView
             model={model}
             statBasisLabel={statBasisLabel}
             onEditMatchup={() => setActiveView("matchup")}

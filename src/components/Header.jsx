@@ -4,13 +4,17 @@ import {
   FlaskConical,
   Gauge,
   SlidersHorizontal,
+  Sparkles,
   Swords,
+  TrendingUp,
 } from "lucide-react";
 
 const VIEWS = [
   ["matchup", "Matchup", Swords],
   ["analysis", "Analysis", BarChart3],
   ["visuals", "Visuals", Gauge],
+  ["trends", "Trends", TrendingUp],
+  ["outlook", "Outlook", Sparkles],
   ["model", "Model", SlidersHorizontal],
 ];
 

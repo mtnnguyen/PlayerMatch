@@ -35,11 +35,48 @@ import {
   buildFriendlyProfileSummary,
 } from "../model/humanInsights";
 
+import {
+  buildPairSimilarityHistory,
+  getFeature as getHistoricalFeature,
+  getPlayerHistory,
+  summarizePlayerTrend,
+  summarizeSimilarityHistory,
+  buildTrendRead,
+} from "../model/historical";
+
+import {
+  projectionForPlayer,
+} from "../model/projection";
+
+import {
+  buildArchetypeJourney,
+  summarizeArchetypeJourney,
+} from "../model/historicalArchetypes";
+
 export default function usePlayerMatch() {
   const [dataset, setDataset] = useState({
     meta: null,
     players: [],
   });
+
+  const [historyDataset, setHistoryDataset] =
+    useState({
+      meta: null,
+      seasons: [],
+    });
+
+  const [historyError, setHistoryError] =
+    useState("");
+
+  const [projectionDataset, setProjectionDataset] =
+    useState({
+      meta: null,
+      evaluation: {},
+      players: [],
+    });
+
+  const [projectionError, setProjectionError] =
+    useState("");
 
   const [loadError, setLoadError] =
     useState("");
@@ -63,6 +100,9 @@ export default function usePlayerMatch() {
 
   const [poolFilter, setPoolFilter] =
     useState("all");
+
+  const [trendFeatureKey, setTrendFeatureKey] =
+    useState("pts");
 
   useEffect(() => {
     fetch("/players.json")
@@ -90,6 +130,57 @@ export default function usePlayerMatch() {
       })
       .catch((error) => {
         setLoadError(error.message);
+      });
+  }, []);
+
+
+  useEffect(() => {
+    fetch("/player_history.json")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            "Historical dataset not found. Run the V4 history builder to enable Trends."
+          );
+        }
+
+        return response.json();
+      })
+      .then((payload) => {
+        setHistoryDataset({
+          meta: payload.meta ?? {},
+          seasons: payload.seasons ?? [],
+        });
+
+        setHistoryError("");
+      })
+      .catch((error) => {
+        setHistoryError(error.message);
+      });
+  }, []);
+
+
+  useEffect(() => {
+    fetch("/projections.json")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            "Projection dataset not found. Run the V5 training script to enable Outlook."
+          );
+        }
+
+        return response.json();
+      })
+      .then((payload) => {
+        setProjectionDataset({
+          meta: payload.meta ?? {},
+          evaluation: payload.evaluation ?? {},
+          players: payload.players ?? [],
+        });
+
+        setProjectionError("");
+      })
+      .catch((error) => {
+        setProjectionError(error.message);
       });
   }, []);
 
@@ -387,6 +478,226 @@ export default function usePlayerMatch() {
   ]);
 
 
+  const historyAvailable =
+    historyDataset.seasons.length > 0;
+
+  const trendFeature =
+    getHistoricalFeature(
+      trendFeatureKey
+    );
+
+  const selectedHistory = useMemo(
+    () =>
+      selectedPlayer
+        ? getPlayerHistory(
+            historyDataset,
+            selectedPlayer.id,
+            statBasis
+          )
+        : [],
+    [
+      historyDataset,
+      selectedPlayer,
+      statBasis,
+    ]
+  );
+
+  const comparisonHistory = useMemo(
+    () =>
+      comparisonPlayer
+        ? getPlayerHistory(
+            historyDataset,
+            comparisonPlayer.id,
+            statBasis
+          )
+        : [],
+    [
+      historyDataset,
+      comparisonPlayer,
+      statBasis,
+    ]
+  );
+
+  const selectedTrend = useMemo(
+    () =>
+      summarizePlayerTrend(
+        selectedHistory,
+        trendFeature
+      ),
+    [
+      selectedHistory,
+      trendFeature,
+    ]
+  );
+
+  const comparisonTrend = useMemo(
+    () =>
+      summarizePlayerTrend(
+        comparisonHistory,
+        trendFeature
+      ),
+    [
+      comparisonHistory,
+      trendFeature,
+    ]
+  );
+
+  const trendRead = useMemo(
+    () =>
+      selectedPlayer &&
+      comparisonPlayer
+        ? buildTrendRead({
+            leftName:
+              selectedPlayer.name,
+            rightName:
+              comparisonPlayer.name,
+            leftTrend:
+              selectedTrend,
+            rightTrend:
+              comparisonTrend,
+            feature:
+              trendFeature,
+          })
+        : null,
+    [
+      selectedPlayer,
+      comparisonPlayer,
+      selectedTrend,
+      comparisonTrend,
+      trendFeature,
+    ]
+  );
+
+  const similarityHistory = useMemo(
+    () =>
+      selectedPlayer &&
+      comparisonPlayer &&
+      historyAvailable
+        ? buildPairSimilarityHistory({
+            historyDataset,
+            leftId:
+              selectedPlayer.id,
+            rightId:
+              comparisonPlayer.id,
+            statBasis,
+            weights:
+              effectiveWeights,
+          })
+        : [],
+    [
+      historyDataset,
+      selectedPlayer,
+      comparisonPlayer,
+      statBasis,
+      effectiveWeights,
+      historyAvailable,
+    ]
+  );
+
+  const similarityHistorySummary =
+    useMemo(
+      () =>
+        summarizeSimilarityHistory(
+          similarityHistory
+        ),
+      [similarityHistory]
+    );
+
+
+  const projectionsAvailable =
+    projectionDataset.players.length > 0;
+
+  const selectedProjection = useMemo(
+    () =>
+      selectedPlayer
+        ? projectionForPlayer(
+            projectionDataset,
+            selectedPlayer.id
+          )
+        : null,
+    [
+      projectionDataset,
+      selectedPlayer,
+    ]
+  );
+
+  const comparisonProjection = useMemo(
+    () =>
+      comparisonPlayer
+        ? projectionForPlayer(
+            projectionDataset,
+            comparisonPlayer.id
+          )
+        : null,
+    [
+      projectionDataset,
+      comparisonPlayer,
+    ]
+  );
+
+  const selectedArchetypeJourney = useMemo(
+    () =>
+      selectedPlayer &&
+      historyAvailable
+        ? buildArchetypeJourney({
+            historyDataset,
+            playerId:
+              selectedPlayer.id,
+            statBasis,
+            weights:
+              effectiveWeights,
+            clusterCount: 6,
+          })
+        : [],
+    [
+      historyDataset,
+      selectedPlayer,
+      statBasis,
+      effectiveWeights,
+      historyAvailable,
+    ]
+  );
+
+  const comparisonArchetypeJourney = useMemo(
+    () =>
+      comparisonPlayer &&
+      historyAvailable
+        ? buildArchetypeJourney({
+            historyDataset,
+            playerId:
+              comparisonPlayer.id,
+            statBasis,
+            weights:
+              effectiveWeights,
+            clusterCount: 6,
+          })
+        : [],
+    [
+      historyDataset,
+      comparisonPlayer,
+      statBasis,
+      effectiveWeights,
+      historyAvailable,
+    ]
+  );
+
+  const selectedArchetypeJourneySummary = useMemo(
+    () =>
+      summarizeArchetypeJourney(
+        selectedArchetypeJourney
+      ),
+    [selectedArchetypeJourney]
+  );
+
+  const comparisonArchetypeJourneySummary = useMemo(
+    () =>
+      summarizeArchetypeJourney(
+        comparisonArchetypeJourney
+      ),
+    [comparisonArchetypeJourney]
+  );
+
+
   const decisionBrief = useMemo(
     () =>
       selectedPlayer && comparisonPlayer
@@ -451,6 +762,12 @@ export default function usePlayerMatch() {
 
   return {
     dataset,
+    historyDataset,
+    historyAvailable,
+    historyError,
+    projectionDataset,
+    projectionsAvailable,
+    projectionError,
     loadError,
 
     players,
@@ -464,6 +781,7 @@ export default function usePlayerMatch() {
     comparisonRole,
 
     categories,
+    featureRows,
     drivers,
     differences,
     summary,
@@ -472,6 +790,24 @@ export default function usePlayerMatch() {
     zScoreInterpretation,
     friendlyProfileSummary,
     decisionBrief,
+
+    trendFeatureKey,
+    setTrendFeatureKey,
+    trendFeature,
+    selectedHistory,
+    comparisonHistory,
+    selectedTrend,
+    comparisonTrend,
+    trendRead,
+    similarityHistory,
+    similarityHistorySummary,
+
+    selectedProjection,
+    comparisonProjection,
+    selectedArchetypeJourney,
+    comparisonArchetypeJourney,
+    selectedArchetypeJourneySummary,
+    comparisonArchetypeJourneySummary,
 
     profile,
     setProfile,

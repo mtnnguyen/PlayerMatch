@@ -248,12 +248,51 @@ export default function usePlayerMatch() {
     ]
   );
 
-  const comparisonPlayer =
-    matches.find(
-      (player) => player.id === comparisonId
-    ) ??
-    matches[0] ??
-    null;
+  const comparisonPlayer = useMemo(() => {
+    const rankedMatch =
+      matches.find(
+        (player) =>
+          player.id === comparisonId
+      );
+
+    if (rankedMatch) {
+      return rankedMatch;
+    }
+
+    const explicitlySelected =
+      comparisonId != null
+        ? players.find(
+            (player) =>
+              player.id === comparisonId
+          )
+        : null;
+
+    if (
+      explicitlySelected &&
+      selectedPlayer &&
+      explicitlySelected.id !==
+        selectedPlayer.id
+    ) {
+      return {
+        ...explicitlySelected,
+        similarity: pairSimilarity(
+          selectedPlayer,
+          explicitlySelected,
+          effectiveWeights,
+          stats
+        ),
+      };
+    }
+
+    return matches[0] ?? null;
+  }, [
+    matches,
+    comparisonId,
+    players,
+    selectedPlayer,
+    effectiveWeights,
+    stats,
+  ]);
 
   const categories = useMemo(
     () =>
@@ -728,6 +767,24 @@ export default function usePlayerMatch() {
   }
 
   function selectComparison(player) {
+    if (
+      !player ||
+      !selectedPlayer ||
+      player.id === selectedPlayer.id
+    ) {
+      return;
+    }
+
+    const isInCurrentPool =
+      comparisonPool.some(
+        (candidate) =>
+          candidate.id === player.id
+      );
+
+    if (!isInCurrentPool) {
+      setPoolFilter("all");
+    }
+
     setComparisonId(player.id);
   }
 

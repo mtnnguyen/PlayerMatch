@@ -1,0 +1,59 @@
+name: PlayerMatch CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend tests and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Run JavaScript model tests
+        run: npm test
+
+      - name: Build production app
+        run: npm run build
+
+  projection-pipeline:
+    name: Projection pipeline tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-v5.txt
+
+      - name: Install Python dependencies
+        run: pip install -r requirements-v5.txt
+
+      - name: Run projection pipeline tests
+        run: >-
+          python -m unittest discover
+          -s tests/python
+          -p "test_*.py"
+          -v

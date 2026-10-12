@@ -207,6 +207,42 @@ PlayerMatch does **not** directly model:
 
 Projection training also requires a player to remain eligible in the following season, which creates survivorship / availability bias. Historical error bands summarize past validation errors; they are not formal confidence intervals.
 
+## Testing and continuous integration
+
+PlayerMatch includes deterministic model tests for the core analytics and projection pipeline.
+
+Frontend / analytics tests cover:
+
+```text
+cosine-similarity symmetry and self-match behavior
+percentile tie handling
+comparison-pool filtering
+ranked-match ordering
+deterministic K-means clustering
+PCA axis orthogonality and finite projections
+```
+
+Projection-pipeline tests cover:
+
+```text
+season chronology
+season-t to season-(t+1) feature construction
+future-target leakage checks
+final-holdout isolation
+2% simplicity-aware model selection
+generated projection JSON schema and finite outputs
+```
+
+Run locally:
+
+```powershell
+npm test
+python -m unittest discover -s tests/python -p "test_*.py" -v
+npm run build
+```
+
+GitHub Actions runs the JavaScript tests, Python pipeline tests, and production build on pushes to `main` and on pull requests.
+
 ## Tech stack
 
 **Frontend:** React, Vite, JavaScript, SVG, Lucide React  

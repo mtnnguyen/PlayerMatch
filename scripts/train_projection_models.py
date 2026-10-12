@@ -649,6 +649,23 @@ def extract_feature_importance(name: str, estimator: object | None) -> list[dict
     ]
 
 
+def split_holdout_frame(
+    frame: pd.DataFrame,
+    holdout_season: str,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    holdout_year = season_start(holdout_season)
+
+    pre_holdout = frame[
+        frame["targetSeason"].map(season_start) < holdout_year
+    ].copy()
+
+    holdout = frame[
+        frame["targetSeason"] == holdout_season
+    ].copy()
+
+    return pre_holdout, holdout
+
+
 def fit_and_evaluate_target(
     frame: pd.DataFrame,
     target: str,

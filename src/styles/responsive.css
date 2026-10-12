@@ -1,0 +1,166 @@
+@media (max-width: 1200px) {
+  .workbench-header { grid-template-columns: 220px 1fr auto; }
+  .header-model { display: none; }
+  .matchup-stage { grid-template-columns: 1fr 185px 1fr; }
+  .stage-player--left { padding-left: 18px; }
+  .stage-player--right { padding-right: 18px; }
+  .player-portrait--large { width: 170px; height: 225px; }
+
+  .analyst-readout {
+    grid-template-columns: 36px 1fr;
+  }
+
+  .analyst-facts {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid #303640;
+    padding-top: 10px;
+  }
+
+  .match-card-grid { grid-template-columns: repeat(3, 1fr); }
+  .match-card:nth-child(3) { border-right: 0; }
+  .match-card:nth-child(-n + 3) { border-bottom: 1px solid #282e37; }
+}
+
+@media (max-width: 980px) {
+  .workbench-header { grid-template-columns: 180px 1fr auto; }
+  .workbench-nav { gap: 14px; }
+
+  .analysis-grid { grid-template-columns: 1fr; }
+  .model-analysis { grid-template-columns: repeat(2, 1fr); }
+
+  .matchup-stage { grid-template-columns: 1fr; }
+
+  .matchup-center {
+    min-height: 210px;
+    border-top: 1px solid #292f38;
+    border-bottom: 1px solid #292f38;
+  }
+
+  .stage-player { min-height: 290px; }
+
+  .stage-player--right { flex-direction: row-reverse; }
+  .stage-player--right .stage-player-copy { text-align: left; }
+  .stage-player--right h1 { margin-left: 0; }
+  .stage-player--right .archetype-row { align-items: flex-start; }
+  .stage-player--right .stage-line { justify-content: flex-start; }
+
+  .slot-search--right { margin-left: 0; }
+  .slot-search--right .slot-search-menu { left: 0; right: auto; }
+}
+
+@media (max-width: 760px) {
+  .workbench-header {
+    position: static;
+    grid-template-columns: 1fr auto;
+    gap: 9px;
+    padding: 9px 11px;
+  }
+
+  .workbench-nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    gap: 18px;
+  }
+
+  .workspace {
+    width: calc(100% - 18px);
+    padding-top: 9px;
+  }
+
+  .stage-player {
+    min-height: 310px;
+    padding: 14px;
+  }
+
+  .stage-player--left,
+  .stage-player--right {
+    box-shadow: none;
+  }
+
+  .player-portrait--large { width: 145px; height: 210px; }
+  .stage-player h1 { font-size: clamp(26px, 8vw, 40px); }
+
+  .stage-line {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+  }
+
+  .profile-deck {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .profile-deck-copy { grid-template-columns: 1fr; }
+  .profile-buttons { overflow-x: auto; }
+
+  .analyst-facts { grid-template-columns: 1fr; }
+
+  .analyst-facts > div {
+    padding: 7px 0;
+    border-right: 0;
+    border-bottom: 1px solid #303640;
+  }
+
+  .analysis-player-labels { display: none; }
+  .battle-row { grid-template-columns: 58px 1fr 58px; }
+  .model-analysis { grid-template-columns: 1fr; }
+
+  .match-card-grid { grid-template-columns: 1fr 1fr; }
+  .match-card:nth-child(2n) { border-right: 0; }
+  .match-card:nth-child(-n + 4) { border-bottom: 1px solid #282e37; }
+
+  .method-grid { grid-template-columns: 1fr; }
+  .method-grid article,
+  .method-grid article:nth-child(2n) { border-right: 0; }
+}
+
+@media (max-width: 520px) {
+  .stage-player {
+    min-height: 370px;
+    align-items: flex-end;
+  }
+
+  .player-portrait--large {
+    position: absolute;
+    right: -10px;
+    bottom: 0;
+    width: 180px;
+    height: 250px;
+    opacity: 0.62;
+  }
+
+  .stage-player--right .player-portrait--large {
+    right: auto;
+    left: -10px;
+  }
+
+  .stage-player--right .stage-player-copy {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .stage-player--right h1 { margin-left: auto; }
+  .stage-player--right .archetype-row { align-items: flex-end; }
+  .stage-player--right .stage-line { justify-content: flex-end; }
+
+  .slot-search { width: 100%; }
+
+  .slot-search-menu,
+  .slot-search--right .slot-search-menu {
+    left: 0;
+    right: auto;
+    width: min(330px, calc(100vw - 46px));
+  }
+
+  .battle-label span { display: none; }
+
+  .match-card-grid { grid-template-columns: 1fr; }
+  .match-card {
+    border-right: 0 !important;
+    border-bottom: 1px solid #282e37;
+  }
+
+  .weight-drawer > div { grid-template-columns: repeat(2, 1fr); }
+}

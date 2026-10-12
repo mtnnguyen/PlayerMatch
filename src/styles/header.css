@@ -1,0 +1,126 @@
+.workbench-header {
+  position: sticky;
+  top: 0;
+  z-index: 300;
+
+  min-height: 56px;
+
+  display: grid;
+  grid-template-columns: 260px 1fr auto;
+  align-items: center;
+  gap: 22px;
+
+  padding: 0 22px;
+
+  color: white;
+  background: #080b0f;
+  border-bottom: 1px solid #2b313a;
+}
+
+.workbench-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+
+  color: #0a0d11;
+  background: var(--lime);
+
+  border-radius: 2px;
+
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: 0.05em;
+}
+
+.workbench-brand > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.workbench-brand strong {
+  font-size: 13px;
+  font-weight: 850;
+  letter-spacing: -0.03em;
+}
+
+.workbench-brand span {
+  color: #727a86;
+  font: 700 6px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.workbench-nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.workbench-nav a {
+  position: relative;
+  color: #858d98;
+  text-decoration: none;
+  font: 800 7px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.workbench-nav a:hover { color: white; }
+
+.workbench-nav a:hover::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -9px;
+  height: 2px;
+  background: var(--lime);
+}
+
+.workbench-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-model {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #69717c;
+  font: 700 6px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.season-chip {
+  padding: 6px 8px;
+  color: #0a0d11;
+  background: var(--lime);
+  border-radius: 2px;
+  font: 900 7px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.header-help {
+  width: 31px;
+  height: 31px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: #7c8490;
+  background: transparent;
+  border: 1px solid #303640;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.header-help:hover {
+  color: white;
+  border-color: #707884;
+}

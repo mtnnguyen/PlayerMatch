@@ -84,7 +84,19 @@ export function formatProjectionChange(
     : `${sign}${rendered}`;
 }
 
-export function formatProjectionError(
+function projectionErrorUnit(key) {
+  const units = {
+    pts: "PPG",
+    reb: "RPG",
+    ast: "APG",
+    tsPct: "pp",
+    usage: "pp",
+  };
+
+  return units[key] ?? "";
+}
+
+export function formatProjectionErrorMagnitude(
   key,
   value
 ) {
@@ -96,15 +108,41 @@ export function formatProjectionError(
       ? `${numeric}`
       : numeric.toFixed(1);
 
-  const units = {
-    pts: "PPG",
-    reb: "RPG",
-    ast: "APG",
-    tsPct: "pp",
-    usage: "pp",
-  };
+  return `${rendered} ${projectionErrorUnit(
+    key
+  )}`.trim();
+}
 
-  return `±${rendered} ${units[key] ?? ""}`.trim();
+export function formatProjectionSignedError(
+  key,
+  value
+) {
+  const numeric =
+    Number(value ?? 0);
+
+  const sign =
+    numeric > 0
+      ? "+"
+      : "";
+
+  const rendered =
+    Math.abs(numeric) < 0.05
+      ? "0.0"
+      : numeric.toFixed(1);
+
+  return `${sign}${rendered} ${projectionErrorUnit(
+    key
+  )}`.trim();
+}
+
+export function formatProjectionError(
+  key,
+  value
+) {
+  return `±${formatProjectionErrorMagnitude(
+    key,
+    value
+  )}`;
 }
 
 export function projectionErrorBadge(
@@ -289,6 +327,89 @@ export function performanceRead(
       (improvement < 2
         ? "Treat this as effectively tied rather than a major forecasting gain."
         : "This is evidence of added predictive value on the held-out season, not a guarantee that the advantage will persist."),
+  };
+}
+
+export function holdoutDiagnosticRead(
+  evaluation
+) {
+  const target =
+    evaluation?.target;
+
+  const dimensions =
+    evaluation?.diagnostics
+      ?.dimensions;
+
+  if (!target || !dimensions) {
+    return null;
+  }
+
+  const scoringGroups =
+    dimensions.scoringLevel
+      ?.groups ?? [];
+
+  const topScorers =
+    scoringGroups.find(
+      (row) => row.key === "top"
+    ) ?? null;
+
+  const candidates =
+    Object.values(dimensions)
+      .flatMap(
+        (dimension) =>
+          (dimension.groups ?? [])
+            .filter(
+              (group) =>
+                Number(
+                  group.sampleCount ?? 0
+                ) >= 10 &&
+                Number.isFinite(
+                  Number(
+                    group.selectedMAE
+                  )
+                )
+            )
+            .map((group) => ({
+              ...group,
+              dimensionLabel:
+                dimension.label,
+            }))
+      );
+
+  const worstGroup =
+    [...candidates].sort(
+      (a, b) =>
+        Number(b.selectedMAE) -
+        Number(a.selectedMAE)
+    )[0] ?? null;
+
+  const topScorerLine =
+    topScorers
+      ? `Top 10% scorers: model MAE ${formatProjectionErrorMagnitude(
+          target,
+          topScorers.selectedMAE
+        )} vs baseline ${formatProjectionErrorMagnitude(
+          target,
+          topScorers.baselineMAE
+        )}; mean signed error ${formatProjectionSignedError(
+          target,
+          topScorers.meanSignedError
+        )}.`
+      : "Top-scorer diagnostic unavailable.";
+
+  const worstGroupLine =
+    worstGroup
+      ? `Highest-error descriptive slice: ${worstGroup.dimensionLabel} · ${worstGroup.label} · MAE ${formatProjectionErrorMagnitude(
+          target,
+          worstGroup.selectedMAE
+        )} · n=${worstGroup.sampleCount}.`
+      : "No subgroup has enough held-out observations for a stable descriptive read.";
+
+  return {
+    topScorerLine,
+    worstGroupLine,
+    caveat:
+      "These are descriptive holdout slices, not significance tests. Negative signed error means the model underpredicted actual outcomes on average.",
   };
 }
 

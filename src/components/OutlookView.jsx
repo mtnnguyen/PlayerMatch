@@ -22,6 +22,7 @@ import {
   featureLabel,
   formatProjectionError,
   formatProjectionValue,
+  holdoutDiagnosticRead,
   performanceRead,
   playerProjectionStory,
   PROJECTION_TARGETS,
@@ -722,6 +723,11 @@ function PerformanceView({
   const performance =
     performanceRead(active);
 
+  const diagnosticRead =
+    holdoutDiagnosticRead(
+      active
+    );
+
   const rows =
     useMemo(
       () =>
@@ -884,6 +890,16 @@ function PerformanceView({
                 ?.headline
             }
           </p>
+
+          {active?.selection
+            ?.selectedBySimplicityRule && (
+            <small className="projection-watch-note">
+              Simplicity rule: {active.selectedModel} was within{" "}
+              {active.selection.tolerancePct.toFixed(1)}% of the best
+              validation MAE, so PlayerMatch preferred it over{" "}
+              {active.selection.bestValidationModel}.
+            </small>
+          )}
         </article>
 
         <article>
@@ -892,8 +908,31 @@ function PerformanceView({
           </span>
 
           <p>
-            Model family was chosen using expanding-window validation. The latest observed season was then held out and never used for model selection.
+            Candidate model families were compared using expanding-window validation. If validation MAE is within{" "}
+            <strong>
+              {active?.selection?.tolerancePct?.toFixed(1) ?? "2.0"}%
+            </strong>{" "}
+            of the best result, PlayerMatch prefers the simpler model. The latest observed season is then held out from model selection.
           </p>
+        </article>
+
+        <article>
+          <span>
+            Holdout slice check
+          </span>
+
+          <p>
+            {diagnosticRead?.topScorerLine ??
+              "Rebuild projections to generate subgroup diagnostics."}
+          </p>
+
+          {diagnosticRead && (
+            <small className="projection-watch-note">
+              {diagnosticRead.worstGroupLine}
+              {" "}
+              {diagnosticRead.caveat}
+            </small>
+          )}
         </article>
 
         <article>
@@ -904,8 +943,7 @@ function PerformanceView({
           <p>
             Roughly{" "}
             <strong>
-              ±
-              {formatProjectionValue(
+              {formatProjectionError(
                 activeTarget,
                 active
                   ?.historicalErrorBand80 ??

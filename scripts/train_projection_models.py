@@ -279,6 +279,17 @@ MODEL_FACTORIES: dict[str, Callable[[], object]] = {
     "Gradient Boosting": make_gradient_boosting,
 }
 
+MODEL_COMPLEXITY = {
+    "Baseline": 0,
+    "Ridge": 1,
+    "Gradient Boosting": 2,
+}
+
+# If a simpler model lands within 2% of the best expanding-window
+# validation MAE, prefer the simpler model rather than treating a tiny
+# validation difference as evidence that extra complexity is worthwhile.
+SIMPLICITY_TOLERANCE = 0.02
+
 
 def baseline_predictions(frame: pd.DataFrame, target: str) -> np.ndarray:
     return frame[f"current_{target}"].to_numpy(dtype=float)
@@ -319,6 +330,230 @@ def metric_payload(actual: np.ndarray, predicted: np.ndarray) -> dict:
             mean_squared_error(actual, predicted) ** 0.5
         ),
         "sampleCount": int(len(actual)),
+    }
+
+
+def select_validation_model(
+    validation_results: list[ModelResult],
+) -> tuple[ModelResult, ModelResult, list[ModelResult], float]:
+    finite = [
+        result
+        for result in validation_results
+        if np.isfinite(result.validation_mae)
+    ]
+
+    if not finite:
+        raise RuntimeError("No model produced a finite validation MAE.")
+
+    best = min(
+        finite,
+        key=lambda result: result.validation_mae,
+    )
+
+    tolerance_cutoff = best.validation_mae * (
+        1.0 + SIMPLICITY_TOLERANCE
+    )
+
+    eligible = [
+        result
+        for result in finite
+        if result.validation_mae <= tolerance_cutoff
+    ]
+
+    selected = min(
+        eligible,
+        key=lambda result: (
+            MODEL_COMPLEXITY.get(result.name, 99),
+            result.validation_mae,
+        ),
+    )
+
+    return selected, best, eligible, tolerance_cutoff
+
+
+def subgroup_metrics(
+    holdout: pd.DataFrame,
+    target: str,
+    mask: np.ndarray,
+    selected_predictions: np.ndarray,
+    baseline_predictions_array: np.ndarray,
+    actual: np.ndarray,
+) -> dict:
+    mask = np.asarray(mask, dtype=bool)
+    sample_count = int(mask.sum())
+
+    if sample_count == 0:
+        return {
+            "sampleCount": 0,
+            "selectedMAE": None,
+            "baselineMAE": None,
+            "maeImprovementPct": None,
+            "meanSignedError": None,
+            "meanProjectionChange": None,
+        }
+
+    selected_group = selected_predictions[mask]
+    baseline_group = baseline_predictions_array[mask]
+    actual_group = actual[mask]
+
+    selected_mae = float(
+        mean_absolute_error(actual_group, selected_group)
+    )
+    baseline_mae = float(
+        mean_absolute_error(actual_group, baseline_group)
+    )
+
+    improvement = (
+        (baseline_mae - selected_mae) / baseline_mae * 100
+        if baseline_mae
+        else 0.0
+    )
+
+    current_target = holdout[
+        f"current_{target}"
+    ].to_numpy(dtype=float)[mask]
+
+    return {
+        "sampleCount": sample_count,
+        "selectedMAE": selected_mae,
+        "baselineMAE": baseline_mae,
+        "maeImprovementPct": float(improvement),
+        "meanSignedError": float(
+            np.mean(selected_group - actual_group)
+        ),
+        "meanProjectionChange": float(
+            np.mean(selected_group - current_target)
+        ),
+    }
+
+
+def holdout_diagnostics(
+    holdout: pd.DataFrame,
+    target: str,
+    selected_predictions: np.ndarray,
+    baseline_predictions_array: np.ndarray,
+    actual: np.ndarray,
+) -> dict:
+    pts_rank = holdout["current_pts"].rank(
+        method="average",
+        pct=True,
+    ).to_numpy(dtype=float)
+
+    age = holdout["age"].to_numpy(dtype=float)
+    minutes = holdout["min"].to_numpy(dtype=float)
+
+    dimensions = {
+        "scoringLevel": {
+            "label": "Scoring level",
+            "basis": "Source-season PTS rank within the held-out sample.",
+            "groups": [
+                {
+                    "key": "bottom",
+                    "label": "Bottom 10% scorers",
+                    "mask": pts_rank <= 0.10,
+                },
+                {
+                    "key": "middle",
+                    "label": "Middle 80% scorers",
+                    "mask": (pts_rank > 0.10) & (pts_rank <= 0.90),
+                },
+                {
+                    "key": "top",
+                    "label": "Top 10% scorers",
+                    "mask": pts_rank > 0.90,
+                },
+            ],
+        },
+        "age": {
+            "label": "Age",
+            "basis": "Source-season age.",
+            "groups": [
+                {
+                    "key": "young",
+                    "label": "Age 23 or younger",
+                    "mask": age <= 23,
+                },
+                {
+                    "key": "prime",
+                    "label": "Age 24–29",
+                    "mask": (age >= 24) & (age < 30),
+                },
+                {
+                    "key": "veteran",
+                    "label": "Age 30+",
+                    "mask": age >= 30,
+                },
+            ],
+        },
+        "minutes": {
+            "label": "Minutes",
+            "basis": "Source-season minutes per game.",
+            "groups": [
+                {
+                    "key": "low",
+                    "label": "Under 20 MPG",
+                    "mask": minutes < 20,
+                },
+                {
+                    "key": "rotation",
+                    "label": "20–29.9 MPG",
+                    "mask": (minutes >= 20) & (minutes < 30),
+                },
+                {
+                    "key": "high",
+                    "label": "30+ MPG",
+                    "mask": minutes >= 30,
+                },
+            ],
+        },
+    }
+
+    output_dimensions: dict[str, dict] = {}
+
+    for dimension_key, dimension in dimensions.items():
+        groups = []
+
+        for group in dimension["groups"]:
+            metrics = subgroup_metrics(
+                holdout,
+                target,
+                group["mask"],
+                selected_predictions,
+                baseline_predictions_array,
+                actual,
+            )
+
+            groups.append(
+                {
+                    "key": group["key"],
+                    "label": group["label"],
+                    **metrics,
+                }
+            )
+
+        output_dimensions[dimension_key] = {
+            "label": dimension["label"],
+            "basis": dimension["basis"],
+            "groups": groups,
+        }
+
+    return {
+        "notes": [
+            (
+                "All subgroup definitions use source-season information "
+                "from the held-out sample; target-season outcomes are not "
+                "used to define the groups."
+            ),
+            (
+                "Mean signed error is prediction minus actual; negative "
+                "values indicate underprediction on average."
+            ),
+            (
+                "Subgroup results are descriptive diagnostics, not "
+                "statistical significance tests."
+            ),
+        ],
+        "dimensions": output_dimensions,
     }
 
 
@@ -454,9 +689,8 @@ def fit_and_evaluate_target(
         for name in candidates
     ]
 
-    selected = min(
-        validation_results,
-        key=lambda result: result.validation_mae,
+    selected, best_validation, eligible_models, tolerance_cutoff = (
+        select_validation_model(validation_results)
     )
 
     selected_estimator = fit_model(selected.name, pre_holdout, target)
@@ -481,6 +715,14 @@ def fit_and_evaluate_target(
         baseline_holdout_predictions,
     )
 
+    diagnostics = holdout_diagnostics(
+        holdout,
+        target,
+        selected_holdout_predictions,
+        baseline_holdout_predictions,
+        actual_holdout,
+    )
+
     residuals = selected.validation_residuals
 
     if not residuals:
@@ -502,7 +744,23 @@ def fit_and_evaluate_target(
             "target": target,
             "label": TARGETS[target]["label"],
             "selectedModel": selected.name,
-            "selectionMethod": "Expanding-window validation MAE",
+            "selectionMethod": (
+                "Expanding-window validation MAE with 2% "
+                "simplicity tolerance"
+            ),
+            "selection": {
+                "bestValidationModel": best_validation.name,
+                "bestValidationMAE": best_validation.validation_mae,
+                "tolerancePct": SIMPLICITY_TOLERANCE * 100,
+                "toleranceCutoffMAE": tolerance_cutoff,
+                "eligibleModels": [
+                    result.name
+                    for result in eligible_models
+                ],
+                "selectedBySimplicityRule": (
+                    selected.name != best_validation.name
+                ),
+            },
             "validation": {
                 result.name: {
                     "mae": result.validation_mae,
@@ -520,6 +778,7 @@ def fit_and_evaluate_target(
                 ),
             },
             "historicalErrorBand80": error_band_80,
+            "diagnostics": diagnostics,
             "topFeatures": importance,
         },
         final_estimator,
@@ -647,6 +906,35 @@ def main() -> None:
             f"baseline MAE {result['holdout']['baseline']['mae']:.3f}"
         )
 
+        selection = result["selection"]
+
+        if selection["selectedBySimplicityRule"]:
+            print(
+                "Simplicity rule: "
+                f"{result['selectedModel']} selected instead of "
+                f"{selection['bestValidationModel']} because it was "
+                f"within {selection['tolerancePct']:.1f}% of the "
+                "best validation MAE."
+            )
+
+        top_scorers = next(
+            row
+            for row in result["diagnostics"]["dimensions"][
+                "scoringLevel"
+            ]["groups"]
+            if row["key"] == "top"
+        )
+
+        print(
+            "Top-scoring decile holdout: "
+            f"n={top_scorers['sampleCount']} | "
+            f"model MAE {top_scorers['selectedMAE']:.3f} | "
+            f"baseline MAE {top_scorers['baselineMAE']:.3f} | "
+            f"signed error {top_scorers['meanSignedError']:+.3f} | "
+            f"avg projection change "
+            f"{top_scorers['meanProjectionChange']:+.3f}"
+        )
+
     feature_frame, current_players = current_feature_frame(
         latest_entry,
         previous_entry,
@@ -721,14 +1009,17 @@ def main() -> None:
             "featureCount": len(FEATURE_COLUMNS),
             "trainingTargetSeasons": observed_target_seasons,
             "evaluationDesign": (
-                "Model family selected with expanding-window validation; "
-                "latest observed target season held out for final evaluation."
+                "Model family selected with expanding-window validation "
+                "and a 2% simplicity tolerance; the latest observed target "
+                "season is held out for final evaluation. Holdout performance "
+                "is also reported across scoring-level, age and minutes groups."
             ),
             "limitations": [
                 "Historical relationships may not persist into the projection season.",
                 "The model does not directly include injuries, transactions, coaching changes, lineup context, contract incentives or playoff role.",
                 "Training transitions require a player to remain eligible in the following season, creating survivorship/availability bias.",
                 "The historical error band is an empirical prediction-error summary, not a formal statistical confidence interval.",
+                "Subgroup holdout diagnostics are descriptive and are not statistical significance tests.",
             ],
         },
         "evaluation": evaluation,

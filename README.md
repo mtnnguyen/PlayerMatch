@@ -91,7 +91,7 @@ Ridge Regression
 Gradient Boosting
 ```
 
-Model family is selected with **expanding-window validation** so later seasons are never used to predict earlier ones. The latest observed target season is then held out for a final backtest.
+Model family is selected with **expanding-window validation** so later seasons are never used to predict earlier ones. PlayerMatch then applies a **2% simplicity tolerance**: if a simpler candidate is within 2% of the best validation MAE, the simpler model is preferred. The latest observed target season is then held out for a final backtest.
 
 Current V5 evaluation uses:
 
@@ -104,15 +104,17 @@ Projection season: 2026-27
 
 ### Held-out results
 
-| Target | Selected model | Model MAE | Baseline MAE |
-| --- | --- | ---: | ---: |
-| PTS | Gradient Boosting | 2.644 | 2.843 |
-| REB | Ridge | 0.814 | 0.865 |
-| AST | Ridge | 0.733 | 0.746 |
-| TS% | Gradient Boosting | 3.060 | 3.487 |
-| USG% | Ridge | 2.141 | 2.314 |
+| Target | Selected model | Model MAE | Baseline MAE | Read |
+| --- | --- | ---: | ---: | --- |
+| PTS | Ridge | 2.634 | 2.843 | Meaningful improvement (7.4%) |
+| REB | Ridge | 0.814 | 0.865 | Meaningful improvement (5.9%) |
+| AST | Ridge | 0.733 | 0.746 | Essentially tied (1.7%) |
+| TS% | Ridge | 3.107 | 3.487 | Strong improvement (10.9%) |
+| USG% | Ridge | 2.141 | 2.314 | Meaningful improvement (7.5%) |
 
-The goal is not to make the most complicated model win. If a simple baseline is stronger, PlayerMatch is designed to report that result instead of hiding it.
+The goal is not to make the most complicated model win. If a simpler model is effectively tied during validation, PlayerMatch prefers the simpler option; if a simple baseline is stronger, PlayerMatch reports that result instead of hiding it.
+
+The final holdout is also checked across **source-season scoring level, age, and minutes groups**. These subgroup results are descriptive diagnostics rather than significance tests.
 
 See [MODEL_CARD_V5.md](MODEL_CARD_V5.md) for methodology, evaluation design, and limitations.
 

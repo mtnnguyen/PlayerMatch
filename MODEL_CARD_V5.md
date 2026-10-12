@@ -124,6 +124,28 @@ train on earlier transitions
 
 This preserves chronological order.
 
+### Simplicity-aware selection
+
+PlayerMatch does not treat microscopic validation differences as strong evidence for extra model complexity.
+
+After expanding-window validation, it applies a **2% simplicity tolerance**:
+
+```text
+find the best validation MAE
+→ keep every candidate within 2% of that result
+→ choose the simplest competitive model
+```
+
+Complexity order:
+
+```text
+Persistence baseline
+Ridge
+Gradient Boosting
+```
+
+This is a transparent practical tolerance, not the formal one-standard-error rule. The output records both the raw best-validation model and the model selected after the simplicity rule.
+
 ## Final holdout
 
 The latest fully observed target season is excluded from model-family selection.
@@ -146,15 +168,42 @@ After the holdout evaluation is recorded, the selected model is refit on all obs
 
 ## Held-out results
 
-| Target | Selected model | Model MAE | Baseline MAE | Model RMSE |
-| --- | --- | ---: | ---: | ---: |
-| PTS | Gradient Boosting | 2.644 | 2.843 | 3.418 |
-| REB | Ridge | 0.814 | 0.865 | 1.052 |
-| AST | Ridge | 0.733 | 0.746 | 1.022 |
-| TS% | Gradient Boosting | 3.060 | 3.487 | 4.020 |
-| USG% | Ridge | 2.141 | 2.314 | 2.817 |
+| Target | Selected model | Model MAE | Baseline MAE | Model RMSE | MAE improvement |
+| --- | --- | ---: | ---: | ---: | ---: |
+| PTS | Ridge | 2.634 | 2.843 | 3.365 | 7.4% |
+| REB | Ridge | 0.814 | 0.865 | 1.052 | 5.9% |
+| AST | Ridge | 0.733 | 0.746 | 1.022 | 1.7% |
+| TS% | Ridge | 3.107 | 3.487 | 4.057 | 10.9% |
+| USG% | Ridge | 2.141 | 2.314 | 2.817 | 7.5% |
 
-The AST improvement over baseline is small and should be interpreted as marginal rather than a large predictive gain.
+AST improves MAE by only 1.7% and should be treated as **essentially tied** with the persistence baseline rather than as a major forecasting gain.
+
+The 2% simplicity rule selected **Ridge** for PTS instead of the raw best-validation model **Gradient Boosting**, and **Ridge** for TS% instead of **Gradient Boosting**. This keeps model complexity proportional to the strength of the validation evidence.
+
+## Holdout subgroup diagnostics
+
+The final holdout is also sliced using **source-season information only** across scoring level, age, and minutes per game.
+
+For the source-season **top 10% of scorers**:
+
+| Target | n | Model MAE | Baseline MAE | Mean signed error | Mean projection change |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| PTS | 33 | 2.935 | 3.288 | +0.465 | -1.241 |
+| REB | 33 | 0.873 | 0.773 | +0.458 | +0.007 |
+| AST | 33 | 0.804 | 0.870 | +0.433 | -0.091 |
+| TS% | 33 | 2.456 | 2.318 | -1.039 | -0.297 |
+| USG% | 33 | 2.148 | 2.442 | +0.135 | -1.053 |
+
+Interpretation:
+
+- `mean signed error = prediction - actual`
+- negative signed error means underprediction on average
+- `mean projection change = prediction - source-season value`
+- subgroup diagnostics are descriptive and are not significance tests
+
+The PTS model regresses the top-scoring decile downward on average, but the held-out signed error for that group is slightly positive rather than negative. In this holdout, regression toward the mean did **not** translate into systematic scoring underprediction for elite scorers.
+
+The TS% result is less favorable at the top end: the persistence baseline is stronger for the top-scoring decile, and the negative signed error indicates some underprediction of next-season efficiency in that group.
 
 ## Evaluation metrics
 
@@ -229,11 +278,11 @@ Historical relationships may not persist.
 
 ### Tail behavior
 
-Regression models can behave differently for extreme player profiles than for the middle of the league. A future validation pass should report error by scoring level, age group, and playing-time group.
+Regression models can behave differently for extreme player profiles than for the middle of the league. V5.1 therefore reports descriptive holdout error by source-season scoring level, age group, and playing-time group. These slices help expose uneven model behavior but are not formal statistical tests.
 
 ### Model-selection uncertainty
 
-Two models can have nearly identical validation error. A future V5.1 refinement should prefer the simpler model when validation performance is effectively tied.
+Two models can have nearly identical validation error. V5.1 addresses this with a transparent 2% simplicity tolerance, but that threshold is still a modelling choice and should be revisited with a longer history and repeated out-of-time evaluation.
 
 ## Responsible interpretation
 

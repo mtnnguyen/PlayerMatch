@@ -7,21 +7,34 @@ import {
   runKMeans,
 } from "./clustering";
 
-export function buildArchetypeJourney({
+export function buildArchetypeJourneys({
   historyDataset,
-  playerId,
+  playerIds,
   statBasis,
   weights,
   clusterCount = 6,
 }) {
-  if (
-    !historyDataset?.seasons
-      ?.length
-  ) {
-    return [];
-  }
+  const uniqueIds = [
+    ...new Set(
+      (playerIds ?? []).filter(
+        (id) => id != null
+      )
+    ),
+  ];
 
-  const journey = [];
+  const journeys =
+    Object.fromEntries(
+      uniqueIds.map(
+        (id) => [id, []]
+      )
+    );
+
+  if (
+    !historyDataset?.seasons?.length ||
+    !uniqueIds.length
+  ) {
+    return journeys;
+  }
 
   for (
     const seasonEntry of historyDataset.seasons
@@ -42,16 +55,21 @@ export function buildArchetypeJourney({
       continue;
     }
 
-    const player =
-      players.find(
-        (item) =>
-          item.id === playerId
+    const presentIds =
+      uniqueIds.filter(
+        (id) =>
+          players.some(
+            (player) =>
+              player.id === id
+          )
       );
 
-    if (!player) {
+    if (!presentIds.length) {
       continue;
     }
 
+    // One clustering run per season. Both player journeys
+    // reuse the same fitted season-level cluster result.
     const result =
       runKMeans(
         players,
@@ -59,40 +77,61 @@ export function buildArchetypeJourney({
         clusterCount
       );
 
-    const cluster =
-      clusterForPlayer(
-        result,
-        players,
-        playerId
-      );
+    for (const playerId of presentIds) {
+      const cluster =
+        clusterForPlayer(
+          result,
+          players,
+          playerId
+        );
 
-    if (!cluster) {
-      continue;
+      if (!cluster) {
+        continue;
+      }
+
+      journeys[playerId].push({
+        season:
+          seasonEntry.season,
+        name:
+          cluster.name,
+        description:
+          cluster.description,
+        size:
+          cluster.members.length,
+        representative:
+          cluster.representative
+            ?.name ??
+          null,
+        traits:
+          cluster.traits,
+        separation:
+          result.separation,
+        silhouette:
+          result.silhouette,
+      });
     }
-
-    journey.push({
-      season:
-        seasonEntry.season,
-      name:
-        cluster.name,
-      description:
-        cluster.description,
-      size:
-        cluster.members.length,
-      representative:
-        cluster.representative
-          ?.name ??
-        null,
-      traits:
-        cluster.traits,
-      separation:
-        result.separation,
-      silhouette:
-        result.silhouette,
-    });
   }
 
-  return journey;
+  return journeys;
+}
+
+export function buildArchetypeJourney({
+  historyDataset,
+  playerId,
+  statBasis,
+  weights,
+  clusterCount = 6,
+}) {
+  const journeys =
+    buildArchetypeJourneys({
+      historyDataset,
+      playerIds: [playerId],
+      statBasis,
+      weights,
+      clusterCount,
+    });
+
+  return journeys[playerId] ?? [];
 }
 
 export function summarizeArchetypeJourney(

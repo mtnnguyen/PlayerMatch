@@ -18,6 +18,18 @@ export default function App() {
 
   const model = usePlayerMatch();
 
+  function changeView(view) {
+    if (view === "trends") {
+      model.loadHistory();
+    }
+
+    if (view === "outlook") {
+      model.loadProjections();
+    }
+
+    setActiveView(view);
+  }
+
   if (model.loadError) {
     return (
       <div className="loading-screen">
@@ -47,7 +59,7 @@ export default function App() {
       <Header
         season={model.dataset.meta?.season}
         activeView={activeView}
-        onViewChange={setActiveView}
+        onViewChange={changeView}
         profile={model.profile}
         statBasisLabel={statBasisLabel}
         onOpenMethodology={() => setShowMethodology(true)}

@@ -19,6 +19,11 @@ import {
 import MatchContext from "./MatchContext";
 
 import {
+  buildArchetypeJourneys,
+  summarizeArchetypeJourney,
+} from "../model/historicalArchetypes";
+
+import {
   featureLabel,
   formatProjectionError,
   formatProjectionValue,
@@ -34,6 +39,7 @@ import {
 
 function OutlookMissing({
   message,
+  loading = false,
 }) {
   return (
     <section className="outlook-missing v3-card">
@@ -43,27 +49,70 @@ function OutlookMissing({
       />
 
       <span>
-        PREDICTION DATA REQUIRED
+        {loading
+          ? "LOADING PREDICTION DATA"
+          : "PREDICTION DATA REQUIRED"}
       </span>
 
       <h2>
-        Train and evaluate V5 once
+        {loading
+          ? "Loading predictive outlook…"
+          : "Projection dataset unavailable"}
       </h2>
 
       <p>
-        {message ||
-          "The rest of PlayerMatch works normally. Outlook needs the generated projection dataset."}
+        {loading
+          ? "PlayerMatch loads the projection file only when Outlook is opened."
+          : message ||
+            "The rest of PlayerMatch works normally. Outlook needs the generated projection dataset."}
       </p>
 
-      <div>
-        <code>
-          python scripts/build_player_history.py
-        </code>
+      {!loading && (
+        <div>
+          <code>
+            python scripts/build_player_history.py
+          </code>
 
-        <code>
-          python scripts/train_projection_models.py
-        </code>
-      </div>
+          <code>
+            python scripts/train_projection_models.py
+          </code>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function OutlookHistoryState({
+  model,
+}) {
+  const loading =
+    model.historyLoading;
+
+  return (
+    <section className="outlook-missing v3-card">
+      <History
+        size={31}
+        aria-hidden="true"
+      />
+
+      <span>
+        {loading
+          ? "LOADING ARCHETYPE HISTORY"
+          : "HISTORICAL DATA REQUIRED"}
+      </span>
+
+      <h2>
+        {loading
+          ? "Building the historical view…"
+          : "Archetype history unavailable"}
+      </h2>
+
+      <p>
+        {loading
+          ? "The multi-season dataset is loaded only when Archetype Journey is opened. Season-level clusters are then calculated once and reused for both players."
+          : model.historyError ||
+            "Archetype Journey needs the generated multi-season dataset."}
+      </p>
     </section>
   );
 }
@@ -585,6 +634,59 @@ function JourneyTimeline({
 function ArchetypeJourneyView({
   model,
 }) {
+  const journeys =
+    useMemo(
+      () =>
+        buildArchetypeJourneys({
+          historyDataset:
+            model.historyDataset,
+          playerIds: [
+            model.selectedPlayer.id,
+            model.comparisonPlayer.id,
+          ],
+          statBasis:
+            model.statBasis,
+          weights:
+            model.effectiveWeights,
+          clusterCount: 6,
+        }),
+      [
+        model.historyDataset,
+        model.selectedPlayer.id,
+        model.comparisonPlayer.id,
+        model.statBasis,
+        model.effectiveWeights,
+      ]
+    );
+
+  const selectedJourney =
+    journeys[
+      model.selectedPlayer.id
+    ] ?? [];
+
+  const comparisonJourney =
+    journeys[
+      model.comparisonPlayer.id
+    ] ?? [];
+
+  const selectedSummary =
+    useMemo(
+      () =>
+        summarizeArchetypeJourney(
+          selectedJourney
+        ),
+      [selectedJourney]
+    );
+
+  const comparisonSummary =
+    useMemo(
+      () =>
+        summarizeArchetypeJourney(
+          comparisonJourney
+        ),
+      [comparisonJourney]
+    );
+
   return (
     <div className="outlook-journey-grid">
       <div className="outlook-journey-stack">
@@ -594,10 +696,10 @@ function ArchetypeJourneyView({
             model.selectedPlayer
           }
           journey={
-            model.selectedArchetypeJourney
+            selectedJourney
           }
           summary={
-            model.selectedArchetypeJourneySummary
+            selectedSummary
           }
         />
 
@@ -607,10 +709,10 @@ function ArchetypeJourneyView({
             model.comparisonPlayer
           }
           journey={
-            model.comparisonArchetypeJourney
+            comparisonJourney
           }
           summary={
-            model.comparisonArchetypeJourneySummary
+            comparisonSummary
           }
         />
       </div>
@@ -640,8 +742,7 @@ function ArchetypeJourneyView({
 
           <p>
             {
-              model
-                .selectedArchetypeJourneySummary
+              selectedSummary
                 ?.headline
             }
           </p>
@@ -654,8 +755,7 @@ function ArchetypeJourneyView({
 
           <p>
             {
-              model
-                .comparisonArchetypeJourneySummary
+              comparisonSummary
                 ?.headline
             }
           </p>
@@ -691,8 +791,7 @@ function ArchetypeJourneyView({
 
             <p>
               {
-                model
-                  .selectedArchetypeJourneySummary
+                selectedSummary
                   ?.caveat
               }
             </p>
@@ -1063,6 +1162,9 @@ export default function OutlookView({
           message={
             model.projectionError
           }
+          loading={
+            model.projectionLoading
+          }
         />
       </section>
     );
@@ -1146,11 +1248,12 @@ export default function OutlookView({
                 ? "active"
                 : ""
             }
-            onClick={() =>
+            onClick={() => {
+              model.loadHistory();
               setActiveOutlook(
                 "journey"
-              )
-            }
+              );
+            }}
           >
             <History
               size={15}
@@ -1192,9 +1295,15 @@ export default function OutlookView({
 
         {activeOutlook ===
           "journey" && (
-          <ArchetypeJourneyView
-            model={model}
-          />
+          model.historyAvailable ? (
+            <ArchetypeJourneyView
+              model={model}
+            />
+          ) : (
+            <OutlookHistoryState
+              model={model}
+            />
+          )
         )}
 
         {activeOutlook ===

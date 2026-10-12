@@ -82,6 +82,7 @@ function TrendCard({
 
 function HistoryMissing({
   message,
+  loading = false,
 }) {
   return (
     <section className="history-missing v3-card">
@@ -92,22 +93,30 @@ function HistoryMissing({
         />
 
         <span>
-          HISTORICAL DATA REQUIRED
+          {loading
+            ? "LOADING HISTORICAL DATA"
+            : "HISTORICAL DATA REQUIRED"}
         </span>
 
         <h2>
-          Build the V4 season history once
+          {loading
+            ? "Loading multi-season analysis…"
+            : "Historical dataset unavailable"}
         </h2>
 
         <p>
-          {message ||
-            "The current-season app still works. Trends needs the new multi-season dataset."}
+          {loading
+            ? "PlayerMatch loads the larger season-history file only when historical analysis is opened."
+            : message ||
+              "The current-season app still works. Trends needs the generated multi-season dataset."}
         </p>
       </div>
 
-      <code>
-        python scripts/build_player_history.py
-      </code>
+      {!loading && (
+        <code>
+          python scripts/build_player_history.py
+        </code>
+      )}
     </section>
   );
 }
@@ -152,6 +161,9 @@ export default function TrendsView({
         <HistoryMissing
           message={
             model.historyError
+          }
+          loading={
+            model.historyLoading
           }
         />
       </section>

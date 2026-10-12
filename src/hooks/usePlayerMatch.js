@@ -1,6 +1,8 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -48,11 +50,6 @@ import {
   projectionForPlayer,
 } from "../model/projection";
 
-import {
-  buildArchetypeJourney,
-  summarizeArchetypeJourney,
-} from "../model/historicalArchetypes";
-
 export default function usePlayerMatch() {
   const [dataset, setDataset] = useState({
     meta: null,
@@ -68,6 +65,12 @@ export default function usePlayerMatch() {
   const [historyError, setHistoryError] =
     useState("");
 
+  const [historyLoading, setHistoryLoading] =
+    useState(false);
+
+  const historyRequestInFlight =
+    useRef(false);
+
   const [projectionDataset, setProjectionDataset] =
     useState({
       meta: null,
@@ -77,6 +80,12 @@ export default function usePlayerMatch() {
 
   const [projectionError, setProjectionError] =
     useState("");
+
+  const [projectionLoading, setProjectionLoading] =
+    useState(false);
+
+  const projectionRequestInFlight =
+    useRef(false);
 
   const [loadError, setLoadError] =
     useState("");
@@ -134,12 +143,23 @@ export default function usePlayerMatch() {
   }, []);
 
 
-  useEffect(() => {
+  const loadHistory = useCallback(() => {
+    if (
+      historyRequestInFlight.current ||
+      historyDataset.seasons.length
+    ) {
+      return;
+    }
+
+    historyRequestInFlight.current = true;
+    setHistoryLoading(true);
+    setHistoryError("");
+
     fetch("/player_history.json")
       .then((response) => {
         if (!response.ok) {
           throw new Error(
-            "Historical dataset not found. Run the V4 history builder to enable Trends."
+            "Historical dataset not found. Run the V5 history builder to enable multi-season analysis."
           );
         }
 
@@ -155,11 +175,28 @@ export default function usePlayerMatch() {
       })
       .catch((error) => {
         setHistoryError(error.message);
+      })
+      .finally(() => {
+        historyRequestInFlight.current = false;
+        setHistoryLoading(false);
       });
-  }, []);
+  }, [
+    historyDataset.seasons.length,
+  ]);
 
 
-  useEffect(() => {
+  const loadProjections = useCallback(() => {
+    if (
+      projectionRequestInFlight.current ||
+      projectionDataset.players.length
+    ) {
+      return;
+    }
+
+    projectionRequestInFlight.current = true;
+    setProjectionLoading(true);
+    setProjectionError("");
+
     fetch("/projections.json")
       .then((response) => {
         if (!response.ok) {
@@ -181,8 +218,14 @@ export default function usePlayerMatch() {
       })
       .catch((error) => {
         setProjectionError(error.message);
+      })
+      .finally(() => {
+        projectionRequestInFlight.current = false;
+        setProjectionLoading(false);
       });
-  }, []);
+  }, [
+    projectionDataset.players.length,
+  ]);
 
   const rawPlayers = dataset.players;
 
@@ -674,69 +717,6 @@ export default function usePlayerMatch() {
     ]
   );
 
-  const selectedArchetypeJourney = useMemo(
-    () =>
-      selectedPlayer &&
-      historyAvailable
-        ? buildArchetypeJourney({
-            historyDataset,
-            playerId:
-              selectedPlayer.id,
-            statBasis,
-            weights:
-              effectiveWeights,
-            clusterCount: 6,
-          })
-        : [],
-    [
-      historyDataset,
-      selectedPlayer,
-      statBasis,
-      effectiveWeights,
-      historyAvailable,
-    ]
-  );
-
-  const comparisonArchetypeJourney = useMemo(
-    () =>
-      comparisonPlayer &&
-      historyAvailable
-        ? buildArchetypeJourney({
-            historyDataset,
-            playerId:
-              comparisonPlayer.id,
-            statBasis,
-            weights:
-              effectiveWeights,
-            clusterCount: 6,
-          })
-        : [],
-    [
-      historyDataset,
-      comparisonPlayer,
-      statBasis,
-      effectiveWeights,
-      historyAvailable,
-    ]
-  );
-
-  const selectedArchetypeJourneySummary = useMemo(
-    () =>
-      summarizeArchetypeJourney(
-        selectedArchetypeJourney
-      ),
-    [selectedArchetypeJourney]
-  );
-
-  const comparisonArchetypeJourneySummary = useMemo(
-    () =>
-      summarizeArchetypeJourney(
-        comparisonArchetypeJourney
-      ),
-    [comparisonArchetypeJourney]
-  );
-
-
   const decisionBrief = useMemo(
     () =>
       selectedPlayer && comparisonPlayer
@@ -822,9 +802,13 @@ export default function usePlayerMatch() {
     historyDataset,
     historyAvailable,
     historyError,
+    historyLoading,
+    loadHistory,
     projectionDataset,
     projectionsAvailable,
     projectionError,
+    projectionLoading,
+    loadProjections,
     loadError,
 
     players,
@@ -861,10 +845,6 @@ export default function usePlayerMatch() {
 
     selectedProjection,
     comparisonProjection,
-    selectedArchetypeJourney,
-    comparisonArchetypeJourney,
-    selectedArchetypeJourneySummary,
-    comparisonArchetypeJourneySummary,
 
     profile,
     setProfile,

@@ -1,37 +1,25 @@
 import { useState } from "react";
 
-import {
-  CategoryEdge,
-  DifferencePanel,
-  MatchStability,
-  ModelDetails,
-  SimilarityDrivers,
-  StatBattle,
-} from "./components/AnalysisPanels";
-
-import AnalystReadout from "./components/AnalystReadout";
-import ClosestMatches from "./components/ClosestMatches";
-import CustomWeights from "./components/CustomWeights";
+import AnalysisView from "./components/AnalysisView";
 import Header from "./components/Header";
-import MatchupStage from "./components/MatchupStage";
+import MatchupView from "./components/MatchupView";
 import MethodologyModal from "./components/MethodologyModal";
-import ModelControls from "./components/ModelControls";
+import ModelView from "./components/ModelView";
+import VisualsView from "./components/VisualsView";
+
+import { STAT_BASES } from "./config/viewConfig";
 import usePlayerMatch from "./hooks/usePlayerMatch";
 
 export default function App() {
-  const [
-    showMethodology,
-    setShowMethodology,
-  ] = useState(false);
+  const [activeView, setActiveView] = useState("matchup");
+  const [showMethodology, setShowMethodology] = useState(false);
 
   const model = usePlayerMatch();
 
   if (model.loadError) {
     return (
       <div className="loading-screen">
-        <strong>
-          PlayerMatch could not start.
-        </strong>
+        <strong>PlayerMatch could not start.</strong>
         <span>{model.loadError}</span>
       </div>
     );
@@ -45,215 +33,57 @@ export default function App() {
   ) {
     return (
       <div className="loading-screen">
-        <strong>
-          Loading PlayerMatch…
-        </strong>
+        <strong>Loading PlayerMatch…</strong>
       </div>
     );
   }
 
+  const statBasisLabel = STAT_BASES[model.statBasis].label;
+
   return (
-    <div className="app-shell">
+    <div className="app-shell v3-shell">
       <Header
-        season={
-          model.dataset.meta
-            ?.season
-        }
-        onOpenMethodology={() =>
-          setShowMethodology(
-            true
-          )
-        }
+        season={model.dataset.meta?.season}
+        activeView={activeView}
+        onViewChange={setActiveView}
+        profile={model.profile}
+        statBasisLabel={statBasisLabel}
+        onOpenMethodology={() => setShowMethodology(true)}
       />
 
-      <main
-        className="workspace"
-        id="main-content"
-        tabIndex="-1"
-      >
-        <MatchupStage
-          allPlayers={
-            model.players
-          }
-          comparisonPool={
-            model.comparisonPool
-          }
-          selectedPlayer={
-            model.selectedPlayer
-          }
-          comparisonPlayer={
-            model.comparisonPlayer
-          }
-          selectedRole={
-            model.selectedRole
-          }
-          comparisonRole={
-            model.comparisonRole
-          }
-          profile={
-            model.profile
-          }
-          statBasis={
-            model.statBasis
-          }
-          onSelectPrimary={
-            model.selectPrimary
-          }
-          onSelectComparison={
-            model.selectComparison
-          }
-          onSwap={
-            model.swapPlayers
-          }
-        />
+      <main className="v3-stage" id="main-content" tabIndex="-1">
+        {activeView === "matchup" && (
+          <MatchupView model={model} />
+        )}
 
-        <ModelControls
-          profile={model.profile}
-          statBasis={model.statBasis}
-          poolFilter={
-            model.poolFilter
-          }
-          onProfileChange={
-            model.setProfile
-          }
-          onStatBasisChange={
-            model.setStatBasis
-          }
-          onPoolFilterChange={
-            model.changePoolFilter
-          }
-          supportsAdvancedBases={
-            model.supportsAdvancedBases
-          }
-          supportsPositions={
-            model.supportsPositions
-          }
-        />
-
-        {model.profile ===
-          "Custom" && (
-          <CustomWeights
-            weights={
-              model.customWeights
-            }
-            onChange={
-              model.changeCustomWeight
-            }
-            onReset={
-              model.resetCustomWeights
-            }
+        {activeView === "analysis" && (
+          <AnalysisView
+            model={model}
+            statBasisLabel={statBasisLabel}
+            onEditMatchup={() => setActiveView("matchup")}
           />
         )}
 
-        <AnalystReadout
-          summary={model.summary}
-          leftName={
-            model.selectedPlayer.name
-          }
-          rightName={
-            model.comparisonPlayer.name
-          }
-        />
-
-        <div
-          className="analysis-grid"
-          id="analysis"
-        >
-          <StatBattle
-            players={
-              model.players
-            }
-            left={
-              model.selectedPlayer
-            }
-            right={
-              model.comparisonPlayer
-            }
+        {activeView === "visuals" && (
+          <VisualsView
+            model={model}
+            statBasisLabel={statBasisLabel}
+            onEditMatchup={() => setActiveView("matchup")}
           />
+        )}
 
-          <aside
-            className="model-analysis"
-            aria-label="Comparison analysis"
-          >
-            <ClosestMatches
-              matches={
-                model.matches
-              }
-              comparisonPlayer={
-                model.comparisonPlayer
-              }
-              onSelect={
-                model.selectComparison
-              }
-            />
-
-            <SimilarityDrivers
-              drivers={
-                model.drivers
-              }
-            />
-
-            <DifferencePanel
-              differences={
-                model.differences
-              }
-              left={
-                model.selectedPlayer
-              }
-              right={
-                model.comparisonPlayer
-              }
-            />
-
-            <MatchStability
-              stability={
-                model.stability
-              }
-            />
-
-            <CategoryEdge
-              categories={
-                model.categories
-              }
-            />
-
-            <ModelDetails
-              playerCount={
-                model.players.length
-              }
-              candidateCount={
-                model.matches.length
-              }
-              profile={
-                model.profile
-              }
-              statBasis={
-                model.statBasis
-              }
-              poolFilter={
-                model.poolFilter
-              }
-              season={
-                model.dataset.meta
-                  ?.season
-              }
-              weights={
-                model.effectiveWeights
-              }
-            />
-          </aside>
-        </div>
+        {activeView === "model" && (
+          <ModelView
+            model={model}
+            statBasisLabel={statBasisLabel}
+            onEditMatchup={() => setActiveView("matchup")}
+          />
+        )}
       </main>
 
       <MethodologyModal
-        open={
-          showMethodology
-        }
-        onClose={() =>
-          setShowMethodology(
-            false
-          )
-        }
+        open={showMethodology}
+        onClose={() => setShowMethodology(false)}
       />
     </div>
   );

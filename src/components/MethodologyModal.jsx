@@ -36,6 +36,16 @@ const steps = [
     "Robustness and interpretation",
     "Match Stability compares the same player pair across all three stat bases. The written interpretation is deterministic and comes from model outputs rather than an external LLM.",
   ],
+  [
+    "07",
+    "Z-score visual analysis",
+    "The Visuals section exposes the same league-standardized values used by the model. A z-score of 0 is the league mean, +1 is one standard deviation above it, and -1 is one standard deviation below it.",
+  ],
+  [
+    "08",
+    "Model interpretation",
+    "The Visuals section translates the standardized profile into an observation, supporting evidence, a defensible conclusion and an explicit limitation. The interpretation is deterministic and based only on the model outputs shown in the app.",
+  ],
 ];
 
 export default function MethodologyModal({

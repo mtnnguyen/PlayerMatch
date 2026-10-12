@@ -1,57 +1,38 @@
-# PlayerMatch V2.1
+# PlayerMatch V3
 
-This `src/` folder builds on the V2 data pipeline you already ran successfully.
+## Product direction
 
-## V2.1 changes
+PlayerMatch V3 is designed like an analyst presenting to a basketball decision-maker:
 
-### Accessibility / usability
-- larger stat labels and UI text
-- larger click/tap targets
-- visible keyboard focus states
-- skip-to-content link
-- keyboard-navigable player search
-- ARIA labels for matchup controls and comparison rows
-- Escape-to-close methodology modal
-- reduced-motion support
-- higher-contrast text colors
+1. show the result
+2. show the evidence
+3. explain what it means in plain language
+4. state the limitation
+5. keep technical model controls available but out of the default workflow
 
-### Workflow
-The sticky right rail is now ordered around the user's investigation flow:
+## Views
 
-1. Closest matches
-2. Why they match
-3. Biggest differences
-4. Match stability
-5. Category edge
-6. Model details
+### Matchup
+The visual home screen and player-selection workflow.
 
-### Match Stability
-The same player pair is re-evaluated with:
+### Analysis
+Detailed evidence: raw stats, league percentiles, model contribution and sensitivity.
 
-- Per Game
-- Per 36
-- Per 100
+### Visuals
+League-relative player profiles expressed in human language. Standardized z-scores remain available as methodology rather than requiring statistical knowledge from the user.
 
-The spread shows how sensitive the comparison is to minutes / pace normalization.
+### Model
+Advanced controls and custom weighting.
 
-### Custom model
-Choose the `Custom` similarity profile to reveal sliders for all 10 model features.
+## Current model
 
-Weights range from `0.0` to `3.0`:
-- `0.0` removes a feature
-- `1.0` is neutral
-- values above `1.0` increase influence
+- 10 statistical features
+- league z-score standardization
+- weighted cosine similarity
+- Per Game / Per 36 / Per 100
+- player-pool filtering
+- deterministic model interpretation
 
-Similarity rankings and all explainability outputs recalculate live.
+## Future V3 work
 
-## Data
-
-You do **not** need to rebuild `players.json` if you already successfully ran the PlayerMatch V2 builder and have:
-
-- `stats.perGame`
-- `stats.per36`
-- `stats.per100`
-- `position`
-- `positionGroup`
-
-Your existing V2 dataset is enough.
+The next major modelling step should use historical seasons before adding true forecasts. That can support trend analysis, aging curves and eventually a defensible projection screen.

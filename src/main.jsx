@@ -10,7 +10,7 @@ import "./styles/controls.css";
 import "./styles/analysis.css";
 import "./styles/rail.css";
 import "./styles/modal.css";
-import "./styles/responsive.css";
+import "./styles/v3.css";
 
 ReactDOM.createRoot(
   document.getElementById("root")

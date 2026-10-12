@@ -25,6 +25,16 @@ import {
   categoryComparisons,
 } from "../model/insights";
 
+import {
+  buildZScoreInterpretation,
+  buildZScoreProfile,
+} from "../model/analysisLab";
+
+import {
+  buildDecisionBrief,
+  buildFriendlyProfileSummary,
+} from "../model/humanInsights";
+
 export default function usePlayerMatch() {
   const [dataset, setDataset] = useState({
     meta: null,
@@ -250,6 +260,56 @@ export default function usePlayerMatch() {
     ]
   );
 
+
+  const zScoreProfile = useMemo(
+    () =>
+      selectedPlayer && comparisonPlayer
+        ? buildZScoreProfile(
+            selectedPlayer,
+            comparisonPlayer,
+            stats
+          )
+        : [],
+    [
+      selectedPlayer,
+      comparisonPlayer,
+      stats,
+    ]
+  );
+
+  const zScoreInterpretation = useMemo(
+    () =>
+      selectedPlayer && comparisonPlayer
+        ? buildZScoreInterpretation(
+            selectedPlayer,
+            comparisonPlayer,
+            zScoreProfile
+          )
+        : null,
+    [
+      selectedPlayer,
+      comparisonPlayer,
+      zScoreProfile,
+    ]
+  );
+
+
+  const friendlyProfileSummary = useMemo(
+    () =>
+      selectedPlayer && comparisonPlayer
+        ? buildFriendlyProfileSummary(
+            selectedPlayer,
+            comparisonPlayer,
+            zScoreProfile
+          )
+        : null,
+    [
+      selectedPlayer,
+      comparisonPlayer,
+      zScoreProfile,
+    ]
+  );
+
   const stability = useMemo(() => {
     if (
       !supportsAdvancedBases ||
@@ -326,6 +386,31 @@ export default function usePlayerMatch() {
     effectiveWeights,
   ]);
 
+
+  const decisionBrief = useMemo(
+    () =>
+      selectedPlayer && comparisonPlayer
+        ? buildDecisionBrief({
+            left: selectedPlayer,
+            right: comparisonPlayer,
+            similarity:
+              comparisonPlayer.similarity ?? 0,
+            categories,
+            drivers,
+            differences,
+            stability,
+          })
+        : null,
+    [
+      selectedPlayer,
+      comparisonPlayer,
+      categories,
+      drivers,
+      differences,
+      stability,
+    ]
+  );
+
   function selectPrimary(player) {
     setSelectedId(player.id);
     setComparisonId(null);
@@ -383,6 +468,10 @@ export default function usePlayerMatch() {
     differences,
     summary,
     stability,
+    zScoreProfile,
+    zScoreInterpretation,
+    friendlyProfileSummary,
+    decisionBrief,
 
     profile,
     setProfile,

@@ -19,21 +19,80 @@ export const CATEGORIES = [
   { name: "Efficiency", features: ["tsPct", "fgPct", "threePct", "ftPct"] },
 ];
 
+const BALANCED_WEIGHTS = {
+  pts: 1,
+  reb: 1,
+  ast: 1,
+  stl: 1,
+  blk: 1,
+  fgPct: 1,
+  threePct: 1,
+  ftPct: 1,
+  usage: 1,
+  tsPct: 1,
+};
+
 export const PROFILES = {
   Balanced: {
-    description: "Equal emphasis across scoring, creation, defense and efficiency.",
-    weights: { pts: 1, reb: 1, ast: 1, stl: 1, blk: 1, fgPct: 1, threePct: 1, ftPct: 1, usage: 1, tsPct: 1 },
+    description:
+      "Equal emphasis across scoring, creation, defense and efficiency.",
+    weights: BALANCED_WEIGHTS,
   },
+
   Scoring: {
-    description: "Prioritizes scoring volume, efficiency, shooting and usage.",
-    weights: { pts: 2.2, reb: 0.5, ast: 0.7, stl: 0.4, blk: 0.35, fgPct: 1.15, threePct: 1.4, ftPct: 0.7, usage: 1.7, tsPct: 1.55 },
+    description:
+      "Prioritizes scoring volume, efficiency, shooting and usage.",
+    weights: {
+      pts: 2.2,
+      reb: 0.5,
+      ast: 0.7,
+      stl: 0.4,
+      blk: 0.35,
+      fgPct: 1.15,
+      threePct: 1.4,
+      ftPct: 0.7,
+      usage: 1.7,
+      tsPct: 1.55,
+    },
   },
+
   Playmaking: {
-    description: "Prioritizes assists, creation and offensive responsibility.",
-    weights: { pts: 0.8, reb: 0.55, ast: 2.6, stl: 0.65, blk: 0.3, fgPct: 0.6, threePct: 0.55, ftPct: 0.4, usage: 1.3, tsPct: 0.65 },
+    description:
+      "Prioritizes assists, creation and offensive responsibility.",
+    weights: {
+      pts: 0.8,
+      reb: 0.55,
+      ast: 2.6,
+      stl: 0.65,
+      blk: 0.3,
+      fgPct: 0.6,
+      threePct: 0.55,
+      ftPct: 0.4,
+      usage: 1.3,
+      tsPct: 0.65,
+    },
   },
+
   Defense: {
-    description: "Prioritizes steals, blocks and rebounding activity.",
-    weights: { pts: 0.35, reb: 1.55, ast: 0.45, stl: 2.25, blk: 2.25, fgPct: 0.4, threePct: 0.25, ftPct: 0.2, usage: 0.25, tsPct: 0.35 },
+    description:
+      "Prioritizes steals, blocks and rebounding activity.",
+    weights: {
+      pts: 0.35,
+      reb: 1.55,
+      ast: 0.45,
+      stl: 2.25,
+      blk: 2.25,
+      fgPct: 0.4,
+      threePct: 0.25,
+      ftPct: 0.2,
+      usage: 0.25,
+      tsPct: 0.35,
+    },
+  },
+
+  Custom: {
+    description:
+      "Build your own model by changing the weight of each feature.",
+    weights: { ...BALANCED_WEIGHTS },
   },
 };

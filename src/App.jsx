@@ -1,222 +1,53 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 
-import Header from "./components/Header";
-import MatchupStage from "./components/MatchupStage";
-import MatchPool from "./components/MatchPool";
-import MethodologyModal from "./components/MethodologyModal";
 import {
   CategoryEdge,
   DifferencePanel,
+  MatchStability,
   ModelDetails,
   SimilarityDrivers,
   StatBattle,
 } from "./components/AnalysisPanels";
 
-import { PROFILES } from "./config/modelConfig";
-import {
-  buildMatches,
-  explainFeatures,
-  leagueStats,
-} from "./model/similarity";
-import {
-  analystSummary,
-  archetype,
-  categoryComparisons,
-} from "./model/insights";
-
-const PROFILE_ICONS = {
-  Balanced: "Balanced",
-  Scoring: "Scoring",
-  Playmaking: "Playmaking",
-  Defense: "Defense",
-};
-
-function ProfileSelector({ profile, onChange }) {
-  return (
-    <section className="profile-deck">
-      <div className="profile-deck-copy">
-        <span>SIMILARITY PROFILE</span>
-        <strong>{profile}</strong>
-        <p>{PROFILES[profile].description}</p>
-      </div>
-
-      <div className="profile-buttons">
-        {Object.keys(PROFILE_ICONS).map((name) => (
-          <button
-            key={name}
-            className={profile === name ? "active" : ""}
-            onClick={() => onChange(name)}
-          >
-            {name}
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function AnalystReadout({ summary, leftName, rightName }) {
-  if (!summary) return null;
-
-  return (
-    <section className="analyst-readout">
-      <div className="analyst-badge">PM</div>
-
-      <div className="analyst-copy">
-        <span>MODEL INTERPRETATION</span>
-        <p>{summary.paragraph}</p>
-      </div>
-
-      <div className="analyst-facts">
-        <div>
-          <span>{leftName} strength</span>
-          <strong>{summary.leftEdge}</strong>
-        </div>
-        <div>
-          <span>{rightName} strength</span>
-          <strong>{summary.rightEdge}</strong>
-        </div>
-        <div>
-          <span>Closest category</span>
-          <strong>{summary.closest}</strong>
-        </div>
-      </div>
-    </section>
-  );
-}
+import AnalystReadout from "./components/AnalystReadout";
+import ClosestMatches from "./components/ClosestMatches";
+import CustomWeights from "./components/CustomWeights";
+import Header from "./components/Header";
+import MatchupStage from "./components/MatchupStage";
+import MethodologyModal from "./components/MethodologyModal";
+import ModelControls from "./components/ModelControls";
+import usePlayerMatch from "./hooks/usePlayerMatch";
 
 export default function App() {
-  const [dataset, setDataset] = useState({ meta: null, players: [] });
-  const [loadError, setLoadError] = useState("");
-  const [selectedId, setSelectedId] = useState(null);
-  const [comparisonId, setComparisonId] = useState(null);
-  const [profile, setProfile] = useState("Balanced");
-  const [showMethodology, setShowMethodology] = useState(false);
+  const [
+    showMethodology,
+    setShowMethodology,
+  ] = useState(false);
 
-  useEffect(() => {
-    fetch("/players.json")
-      .then((response) => {
-        if (!response.ok) throw new Error("Could not load player dataset.");
-        return response.json();
-      })
-      .then((payload) => {
-        const players = payload.players ?? [];
-        setDataset({ meta: payload.meta ?? {}, players });
-        if (players.length) setSelectedId(players[0].id);
-      })
-      .catch((error) => setLoadError(error.message));
-  }, []);
+  const model = usePlayerMatch();
 
-  const players = dataset.players;
-  const stats = useMemo(() => leagueStats(players), [players]);
-
-  const selectedPlayer =
-    players.find((player) => player.id === selectedId) ??
-    players[0] ??
-    null;
-
-  const matches = useMemo(
-    () => buildMatches(players, selectedPlayer, profile, stats),
-    [players, selectedPlayer, profile, stats]
-  );
-
-  const comparisonPlayer =
-    matches.find((player) => player.id === comparisonId) ??
-    matches[0] ??
-    null;
-
-  const categories = useMemo(
-    () =>
-      selectedPlayer && comparisonPlayer
-        ? categoryComparisons(players, selectedPlayer, comparisonPlayer)
-        : [],
-    [players, selectedPlayer, comparisonPlayer]
-  );
-
-  const featureRows = useMemo(
-    () =>
-      selectedPlayer && comparisonPlayer
-        ? explainFeatures(
-            selectedPlayer,
-            comparisonPlayer,
-            stats,
-            profile
-          )
-        : [],
-    [selectedPlayer, comparisonPlayer, stats, profile]
-  );
-
-  const drivers = useMemo(
-    () =>
-      [...featureRows]
-        .filter((row) => row.contribution > 0)
-        .sort((a, b) => b.contribution - a.contribution)
-        .slice(0, 4),
-    [featureRows]
-  );
-
-  const differences = useMemo(
-    () =>
-      [...featureRows]
-        .sort((a, b) => b.weightedGap - a.weightedGap)
-        .slice(0, 3),
-    [featureRows]
-  );
-
-  const selectedRole = useMemo(
-    () => (selectedPlayer ? archetype(players, selectedPlayer) : null),
-    [players, selectedPlayer]
-  );
-
-  const comparisonRole = useMemo(
-    () => (comparisonPlayer ? archetype(players, comparisonPlayer) : null),
-    [players, comparisonPlayer]
-  );
-
-  const summary = useMemo(
-    () =>
-      selectedPlayer && comparisonPlayer
-        ? analystSummary(
-            selectedPlayer,
-            comparisonPlayer,
-            comparisonPlayer.similarity ?? 0,
-            categories,
-            profile,
-            drivers
-          )
-        : null,
-    [selectedPlayer, comparisonPlayer, categories, profile, drivers]
-  );
-
-  function selectPrimary(player) {
-    setSelectedId(player.id);
-    setComparisonId(null);
-  }
-
-  function selectComparison(player) {
-    setComparisonId(player.id);
-  }
-
-  function swapPlayers() {
-    if (!selectedPlayer || !comparisonPlayer) return;
-    const previous = selectedPlayer.id;
-    setSelectedId(comparisonPlayer.id);
-    setComparisonId(previous);
-  }
-
-  if (loadError) {
+  if (model.loadError) {
     return (
       <div className="loading-screen">
-        <strong>PlayerMatch could not start.</strong>
-        <span>{loadError}</span>
+        <strong>
+          PlayerMatch could not start.
+        </strong>
+        <span>{model.loadError}</span>
       </div>
     );
   }
 
-  if (!selectedPlayer || !comparisonPlayer || !selectedRole || !comparisonRole) {
+  if (
+    !model.selectedPlayer ||
+    !model.comparisonPlayer ||
+    !model.selectedRole ||
+    !model.comparisonRole
+  ) {
     return (
       <div className="loading-screen">
-        <strong>Loading PlayerMatch…</strong>
+        <strong>
+          Loading PlayerMatch…
+        </strong>
       </div>
     );
   }
@@ -224,71 +55,205 @@ export default function App() {
   return (
     <div className="app-shell">
       <Header
-        season={dataset.meta?.season}
-        onOpenMethodology={() => setShowMethodology(true)}
+        season={
+          model.dataset.meta
+            ?.season
+        }
+        onOpenMethodology={() =>
+          setShowMethodology(
+            true
+          )
+        }
       />
 
-      <main className="workspace">
+      <main
+        className="workspace"
+        id="main-content"
+        tabIndex="-1"
+      >
         <MatchupStage
-          players={players}
-          selectedPlayer={selectedPlayer}
-          comparisonPlayer={comparisonPlayer}
-          selectedRole={selectedRole}
-          comparisonRole={comparisonRole}
-          profile={profile}
-          onSelectPrimary={selectPrimary}
-          onSelectComparison={selectComparison}
-          onSwap={swapPlayers}
+          allPlayers={
+            model.players
+          }
+          comparisonPool={
+            model.comparisonPool
+          }
+          selectedPlayer={
+            model.selectedPlayer
+          }
+          comparisonPlayer={
+            model.comparisonPlayer
+          }
+          selectedRole={
+            model.selectedRole
+          }
+          comparisonRole={
+            model.comparisonRole
+          }
+          profile={
+            model.profile
+          }
+          statBasis={
+            model.statBasis
+          }
+          onSelectPrimary={
+            model.selectPrimary
+          }
+          onSelectComparison={
+            model.selectComparison
+          }
+          onSwap={
+            model.swapPlayers
+          }
         />
 
-        <ProfileSelector
-          profile={profile}
-          onChange={setProfile}
+        <ModelControls
+          profile={model.profile}
+          statBasis={model.statBasis}
+          poolFilter={
+            model.poolFilter
+          }
+          onProfileChange={
+            model.setProfile
+          }
+          onStatBasisChange={
+            model.setStatBasis
+          }
+          onPoolFilterChange={
+            model.changePoolFilter
+          }
+          supportsAdvancedBases={
+            model.supportsAdvancedBases
+          }
+          supportsPositions={
+            model.supportsPositions
+          }
         />
+
+        {model.profile ===
+          "Custom" && (
+          <CustomWeights
+            weights={
+              model.customWeights
+            }
+            onChange={
+              model.changeCustomWeight
+            }
+            onReset={
+              model.resetCustomWeights
+            }
+          />
+        )}
 
         <AnalystReadout
-          summary={summary}
-          leftName={selectedPlayer.name}
-          rightName={comparisonPlayer.name}
+          summary={model.summary}
+          leftName={
+            model.selectedPlayer.name
+          }
+          rightName={
+            model.comparisonPlayer.name
+          }
         />
 
-        <div className="analysis-grid" id="analysis">
+        <div
+          className="analysis-grid"
+          id="analysis"
+        >
           <StatBattle
-            players={players}
-            left={selectedPlayer}
-            right={comparisonPlayer}
+            players={
+              model.players
+            }
+            left={
+              model.selectedPlayer
+            }
+            right={
+              model.comparisonPlayer
+            }
           />
 
-          <aside className="model-analysis">
-            <CategoryEdge categories={categories} />
+          <aside
+            className="model-analysis"
+            aria-label="Comparison analysis"
+          >
+            <ClosestMatches
+              matches={
+                model.matches
+              }
+              comparisonPlayer={
+                model.comparisonPlayer
+              }
+              onSelect={
+                model.selectComparison
+              }
+            />
 
-            <SimilarityDrivers drivers={drivers} />
+            <SimilarityDrivers
+              drivers={
+                model.drivers
+              }
+            />
 
             <DifferencePanel
-              differences={differences}
-              left={selectedPlayer}
-              right={comparisonPlayer}
+              differences={
+                model.differences
+              }
+              left={
+                model.selectedPlayer
+              }
+              right={
+                model.comparisonPlayer
+              }
+            />
+
+            <MatchStability
+              stability={
+                model.stability
+              }
+            />
+
+            <CategoryEdge
+              categories={
+                model.categories
+              }
             />
 
             <ModelDetails
-              playerCount={players.length}
-              profile={profile}
-              season={dataset.meta?.season}
+              playerCount={
+                model.players.length
+              }
+              candidateCount={
+                model.matches.length
+              }
+              profile={
+                model.profile
+              }
+              statBasis={
+                model.statBasis
+              }
+              poolFilter={
+                model.poolFilter
+              }
+              season={
+                model.dataset.meta
+                  ?.season
+              }
+              weights={
+                model.effectiveWeights
+              }
             />
           </aside>
         </div>
-
-        <MatchPool
-          selectedPlayer={selectedPlayer}
-          comparisonPlayer={comparisonPlayer}
-          matches={matches}
-          onSelect={selectComparison}
-        />
       </main>
 
       <MethodologyModal
-        open={showMethodology}
-        onClose={() => setShowMethodology(false)}
+        open={
+          showMethodology
+        }
+        onClose={() =>
+          setShowMethodology(
+            false
+          )
+        }
       />
     </div>
   );

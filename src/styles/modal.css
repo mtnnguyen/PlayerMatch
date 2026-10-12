@@ -1,0 +1,148 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: grid;
+  place-items: center;
+
+  padding: 24px;
+
+  background: rgba(5, 7, 10, 0.78);
+  backdrop-filter: blur(5px);
+}
+
+.method-modal {
+  width: min(820px, 100%);
+  max-height: calc(100vh - 48px);
+
+  overflow: auto;
+
+  background: var(--paper);
+
+  border: 1px solid #3a4049;
+
+  box-shadow:
+    0 28px 80px
+    rgba(0, 0, 0, 0.35);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 20px;
+
+  color: white;
+  background: #0b0e13;
+
+  border-bottom: 4px solid var(--lime);
+}
+
+.modal-header span {
+  display: block;
+  margin-bottom: 5px;
+
+  color: var(--lime);
+
+  font:
+    900 11px
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+
+  text-transform: uppercase;
+}
+
+.modal-header h2 {
+  margin: 0;
+
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.modal-header button {
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  padding: 0;
+
+  color: #b5bbc4;
+  background: transparent;
+
+  border: 1px solid #4b535e;
+
+  cursor: pointer;
+}
+
+.method-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.method-grid article {
+  min-height: 160px;
+
+  display: grid;
+  grid-template-columns:
+    42px
+    1fr;
+
+  gap: 14px;
+
+  padding: 20px;
+
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.method-grid article:nth-child(2n) {
+  border-right: 0;
+}
+
+.method-grid article > span {
+  color: var(--blue-text);
+
+  font:
+    900 12px
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+}
+
+.method-grid strong {
+  font-size: 14px;
+}
+
+.method-grid p {
+  margin: 7px 0 0;
+
+  color: #555b63;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.method-warning {
+  margin: 16px;
+  padding: 14px;
+
+  color: #4e545b;
+  background: #e8e5dc;
+
+  border-left: 4px solid var(--orange);
+
+  font-size: 13px;
+  line-height: 1.55;
+}

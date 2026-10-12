@@ -1,5 +1,5 @@
 r"""
-Build PlayerMatch V4 multi-season data from the NBA Stats API.
+Build PlayerMatch multi-season data from the NBA Stats API.
 
 This script writes:
 
@@ -12,7 +12,7 @@ This script writes:
 Recommended first run from the project root:
 
     .\.venv\Scripts\Activate.ps1
-    pip install -r requirements-v4.txt
+    pip install -r requirements.txt
     python scripts/build_player_history.py
 
 Optional custom seasons:

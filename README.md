@@ -154,7 +154,7 @@ Python environment:
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements-v5.txt
+pip install -r requirements.txt
 ```
 
 Rebuild historical data and projections:
@@ -270,7 +270,7 @@ PlayerMatch/
 │   └── styles/
 ├── MODEL_CARD_V5.md
 ├── V5_SETUP.md
-└── requirements-v5.txt
+└── requirements.txt
 ```
 
 ## Product principle

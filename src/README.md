@@ -80,7 +80,7 @@ Every target is compared against:
 next season = current season
 ```
 
-If a simple baseline is strongest during time-based model selection, the product reports that result.
+If the persistence baseline is competitive within the time-based selection tolerance, the product can prefer and report that simpler result.
 
 See:
 

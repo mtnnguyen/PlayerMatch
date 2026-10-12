@@ -3182,7 +3182,7 @@ body {
 }
 
 .projection-direction,
-.projection-confidence {
+.projection-error {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -3204,27 +3204,27 @@ body {
   color: #5f6670;
 }
 
-.projection-confidence {
+.projection-error {
   padding: 2px 4px;
   border-radius: 2px;
 }
 
-.projection-confidence--high {
+.projection-error--high {
   color: #275b30;
   background: #dceedd;
 }
 
-.projection-confidence--moderate {
+.projection-error--moderate {
   color: #6d5418;
   background: #f3e8bc;
 }
 
-.projection-confidence--caution {
+.projection-error--caution {
   color: #843a21;
   background: #f6ddd1;
 }
 
-.projection-confidence--neutral {
+.projection-error--neutral {
   color: #5e646c;
   background: #e6e3dc;
 }

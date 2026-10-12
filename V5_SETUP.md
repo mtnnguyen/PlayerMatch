@@ -31,7 +31,7 @@ python -m venv .venv
 ## 3. Install Python dependencies
 
 ```powershell
-pip install -r requirements-v5.txt
+pip install -r requirements.txt
 ```
 
 ## 4. Build all V5 data
@@ -142,7 +142,7 @@ Ridge Regression
 Gradient Boosting
 ```
 
-Model family is selected with expanding-window validation.
+Model family is selected with expanding-window validation. If a simpler candidate is within 2% of the best validation MAE, PlayerMatch prefers the simpler model.
 
 The latest observed target season is held out from model selection for a final backtest.
 
@@ -154,6 +154,30 @@ projection season = 2026-27
 ```
 
 After evaluation, the selected model is refit on all observed transitions.
+
+## Validation commands
+
+Before committing model or UI changes:
+
+```powershell
+npm test
+python -m unittest discover -s tests/python -p "test_*.py" -v
+npm run build
+git diff --check
+```
+
+GitHub Actions runs the JavaScript tests, Python projection-pipeline tests, and production build automatically on pushes to `main` and on pull requests.
+
+## Runtime data loading
+
+The static app loads data on demand:
+
+```text
+initial app → players.json
+Trends → player_history.json
+Outlook → projections.json
+Outlook / Archetype Journey → player_history.json if needed
+```
 
 ## Deployment
 

@@ -219,7 +219,7 @@ function ProjectionMetric({
         </span>
 
         <span
-          className={`projection-confidence projection-confidence--${errorBadge.tone}`}
+          className={`projection-error projection-error--${errorBadge.tone}`}
         >
           {errorBadge.label}
         </span>

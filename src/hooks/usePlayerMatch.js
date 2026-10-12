@@ -1,8 +1,6 @@
 import {
-  useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 
@@ -50,45 +48,23 @@ import {
   projectionForPlayer,
 } from "../model/projection";
 
+import usePlayerData from "./usePlayerData";
+
 export default function usePlayerMatch() {
-  const [dataset, setDataset] = useState({
-    meta: null,
-    players: [],
-  });
-
-  const [historyDataset, setHistoryDataset] =
-    useState({
-      meta: null,
-      seasons: [],
-    });
-
-  const [historyError, setHistoryError] =
-    useState("");
-
-  const [historyLoading, setHistoryLoading] =
-    useState(false);
-
-  const historyRequestInFlight =
-    useRef(false);
-
-  const [projectionDataset, setProjectionDataset] =
-    useState({
-      meta: null,
-      evaluation: {},
-      players: [],
-    });
-
-  const [projectionError, setProjectionError] =
-    useState("");
-
-  const [projectionLoading, setProjectionLoading] =
-    useState(false);
-
-  const projectionRequestInFlight =
-    useRef(false);
-
-  const [loadError, setLoadError] =
-    useState("");
+  const {
+    dataset,
+    historyDataset,
+    historyAvailable,
+    historyError,
+    historyLoading,
+    loadHistory,
+    projectionDataset,
+    projectionsAvailable,
+    projectionError,
+    projectionLoading,
+    loadProjections,
+    loadError,
+  } = usePlayerData();
 
   const [selectedId, setSelectedId] =
     useState(null);
@@ -114,117 +90,17 @@ export default function usePlayerMatch() {
     useState("pts");
 
   useEffect(() => {
-    fetch("/players.json")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            "Could not load player dataset."
-          );
-        }
-
-        return response.json();
-      })
-      .then((payload) => {
-        const players =
-          payload.players ?? [];
-
-        setDataset({
-          meta: payload.meta ?? {},
-          players,
-        });
-
-        if (players.length) {
-          setSelectedId(players[0].id);
-        }
-      })
-      .catch((error) => {
-        setLoadError(error.message);
-      });
-  }, []);
-
-
-  const loadHistory = useCallback(() => {
     if (
-      historyRequestInFlight.current ||
-      historyDataset.seasons.length
+      selectedId == null &&
+      dataset.players.length
     ) {
-      return;
+      setSelectedId(
+        dataset.players[0].id
+      );
     }
-
-    historyRequestInFlight.current = true;
-    setHistoryLoading(true);
-    setHistoryError("");
-
-    fetch("/player_history.json")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            "Historical dataset not found. Run the V5 history builder to enable multi-season analysis."
-          );
-        }
-
-        return response.json();
-      })
-      .then((payload) => {
-        setHistoryDataset({
-          meta: payload.meta ?? {},
-          seasons: payload.seasons ?? [],
-        });
-
-        setHistoryError("");
-      })
-      .catch((error) => {
-        setHistoryError(error.message);
-      })
-      .finally(() => {
-        historyRequestInFlight.current = false;
-        setHistoryLoading(false);
-      });
   }, [
-    historyDataset.seasons.length,
-  ]);
-
-
-  const loadProjections = useCallback(() => {
-    if (
-      projectionRequestInFlight.current ||
-      projectionDataset.players.length
-    ) {
-      return;
-    }
-
-    projectionRequestInFlight.current = true;
-    setProjectionLoading(true);
-    setProjectionError("");
-
-    fetch("/projections.json")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            "Projection dataset not found. Run the V5 training script to enable Outlook."
-          );
-        }
-
-        return response.json();
-      })
-      .then((payload) => {
-        setProjectionDataset({
-          meta: payload.meta ?? {},
-          evaluation: payload.evaluation ?? {},
-          players: payload.players ?? [],
-        });
-
-        setProjectionError("");
-      })
-      .catch((error) => {
-        setProjectionError(error.message);
-      })
-      .finally(() => {
-        projectionRequestInFlight.current = false;
-        setProjectionLoading(false);
-      });
-  }, [
-    projectionDataset.players.length,
+    dataset.players,
+    selectedId,
   ]);
 
   const rawPlayers = dataset.players;
@@ -560,9 +436,6 @@ export default function usePlayerMatch() {
   ]);
 
 
-  const historyAvailable =
-    historyDataset.seasons.length > 0;
-
   const trendFeature =
     getHistoricalFeature(
       trendFeatureKey
@@ -685,9 +558,6 @@ export default function usePlayerMatch() {
       [similarityHistory]
     );
 
-
-  const projectionsAvailable =
-    projectionDataset.players.length > 0;
 
   const selectedProjection = useMemo(
     () =>

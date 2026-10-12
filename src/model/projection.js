@@ -84,6 +84,49 @@ export function formatProjectionChange(
     : `${sign}${rendered}`;
 }
 
+export function formatProjectionError(
+  key,
+  value
+) {
+  const numeric =
+    Math.abs(Number(value ?? 0));
+
+  const rendered =
+    Number.isInteger(numeric)
+      ? `${numeric}`
+      : numeric.toFixed(1);
+
+  const units = {
+    pts: "PPG",
+    reb: "RPG",
+    ast: "APG",
+    tsPct: "pp",
+    usage: "pp",
+  };
+
+  return `±${rendered} ${units[key] ?? ""}`.trim();
+}
+
+export function projectionErrorBadge(
+  target,
+  row
+) {
+  if (!row) {
+    return {
+      label: "Error unavailable",
+      tone: "neutral",
+    };
+  }
+
+  return {
+    label: `Hist. error ${formatProjectionError(
+      target,
+      row.historicalErrorBand80
+    )}`,
+    tone: "neutral",
+  };
+}
+
 export function projectionForPlayer(
   dataset,
   playerId
@@ -119,67 +162,6 @@ export function projectionDirectionCopy(
   }
 
   return "Projected stable";
-}
-
-export function projectionConfidence(
-  row,
-  evaluation
-) {
-  if (
-    !row ||
-    !evaluation
-  ) {
-    return {
-      label: "Unavailable",
-      tone: "neutral",
-    };
-  }
-
-  const current =
-    Math.max(
-      Math.abs(
-        Number(
-          row.current ?? 0
-        )
-      ),
-      1
-    );
-
-  const relativeError =
-    Number(
-      row.historicalErrorBand80 ??
-        0
-    ) / current;
-
-  const beatsBaseline =
-    Boolean(
-      evaluation.holdout
-        ?.beatsBaseline
-    );
-
-  if (
-    beatsBaseline &&
-    relativeError <= 0.12
-  ) {
-    return {
-      label: "Higher confidence",
-      tone: "high",
-    };
-  }
-
-  if (
-    relativeError <= 0.25
-  ) {
-    return {
-      label: "Moderate confidence",
-      tone: "moderate",
-    };
-  }
-
-  return {
-    label: "Use caution",
-    tone: "caution",
-  };
 }
 
 export function featureLabel(
@@ -246,54 +228,132 @@ export function performanceRead(
   const baseline =
     evaluation.holdout?.baseline;
 
-  if (
-    !selected ||
-    !baseline
-  ) {
+  if (!selected || !baseline) {
     return null;
   }
 
   const improvement =
     baseline.mae
-      ? ((baseline.mae -
-          selected.mae) /
-          baseline.mae) *
-        100
+      ? ((baseline.mae - selected.mae) / baseline.mae) * 100
       : 0;
 
-  if (
-    evaluation.selectedModel ===
-    "Baseline"
-  ) {
+  if (evaluation.selectedModel === "Baseline") {
     return {
       improvement: 0,
+      resultLabel: "Baseline selected",
+      tone: "neutral",
       headline:
         "The persistence baseline was the strongest model during time-based validation.",
       detail:
-        "For this target, the most defensible forecast is currently to keep the player's latest value unchanged rather than add unnecessary model complexity.",
+        "For this target, keeping the latest value unchanged was more defensible than adding model complexity.",
     };
+  }
+
+  if (!evaluation.holdout?.beatsBaseline || improvement <= 0) {
+    return {
+      improvement,
+      resultLabel: "Baseline stronger",
+      tone: "loss",
+      headline:
+        `${evaluation.selectedModel} did not beat the persistence baseline on the held-out season.`,
+      detail:
+        "The baseline remains the stronger held-out benchmark for this target.",
+    };
+  }
+
+  let resultLabel = "Strong improvement";
+  let headline =
+    `${evaluation.selectedModel} produced a strong held-out improvement over the baseline.`;
+
+  if (improvement < 2) {
+    resultLabel = "Essentially tied";
+    headline =
+      `${evaluation.selectedModel} was only marginally better than the baseline.`;
+  } else if (improvement < 5) {
+    resultLabel = "Small improvement";
+    headline =
+      `${evaluation.selectedModel} produced a small held-out improvement over the baseline.`;
+  } else if (improvement < 10) {
+    resultLabel = "Meaningful improvement";
+    headline =
+      `${evaluation.selectedModel} produced a meaningful held-out improvement over the baseline.`;
   }
 
   return {
     improvement,
-    headline:
-      evaluation.holdout
-        .beatsBaseline
-        ? `${evaluation.selectedModel} beat the simple baseline on the held-out season.`
-        : `${evaluation.selectedModel} did not beat the simple baseline on the held-out season.`,
+    resultLabel,
+    tone: improvement < 2 ? "neutral" : "win",
+    headline,
     detail:
-      evaluation.holdout
-        .beatsBaseline
-        ? `Holdout MAE improved by ${Math.max(
-            0,
-            improvement
-          ).toFixed(
-            0
-          )}% relative to predicting that the player's current value simply stays the same.`
-        : `The baseline remains difficult to beat for this target. PlayerMatch keeps showing that result instead of hiding it.`,
+      `Holdout MAE improved by ${improvement.toFixed(1)}% relative to the persistence baseline. ` +
+      (improvement < 2
+        ? "Treat this as effectively tied rather than a major forecasting gain."
+        : "This is evidence of added predictive value on the held-out season, not a guarantee that the advantage will persist."),
   };
 }
 
+export function projectionComparisonRead(
+  target,
+  left,
+  right,
+  leftRow,
+  rightRow
+) {
+  if (!leftRow || !rightRow) {
+    return null;
+  }
+
+  const leftHigher =
+    Number(leftRow.projected) >=
+    Number(rightRow.projected);
+
+  const leader =
+    leftHigher ? left : right;
+
+  const gap =
+    Math.abs(
+      Number(leftRow.projected) -
+      Number(rightRow.projected)
+    );
+
+  const errorBand =
+    Math.max(
+      Number(leftRow.historicalErrorBand80 ?? 0),
+      Number(rightRow.historicalErrorBand80 ?? 0)
+    );
+
+  const gapText =
+    formatProjectionChange(
+      target,
+      gap
+    ).replace(/^\+/, "");
+
+  const detail =
+    `${left.name}: ${formatProjectionValue(target, leftRow.projected)} · ` +
+    `${right.name}: ${formatProjectionValue(target, rightRow.projected)}. ` +
+    `Point-estimate gap: ${gapText}.`;
+
+  if (errorBand > 0 && gap < errorBand) {
+    return {
+      headline:
+        `${leader.name} has the higher point estimate, but the gap is smaller than the model's historical error-band magnitude.`,
+      detail:
+        `${detail} Historical 80th-percentile absolute error is ${formatProjectionError(
+          target,
+          errorBand
+        )}, so this should not be treated as a clear separation.`,
+    };
+  }
+
+  return {
+    headline:
+      `${leader.name} has the higher point estimate for ${projectionMeta(
+        target
+      ).label.toLowerCase()}.`,
+    detail:
+      `${detail} The gap is at least as large as the model's historical error-band magnitude, but this is still not a formal significance test.`,
+  };
+}
 
 export function playerProjectionStory(
   playerName,

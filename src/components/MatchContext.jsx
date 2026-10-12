@@ -18,7 +18,7 @@ export default function MatchContext({
       </div>
 
       <div className="match-context-center">
-        <strong>{similarity.toFixed(0)}%</strong>
+        <strong>{similarity.toFixed(0)}/100</strong>
         <span>{profile} · {statBasisLabel}</span>
       </div>
 

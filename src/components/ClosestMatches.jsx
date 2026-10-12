@@ -57,7 +57,7 @@ export default function ClosestMatches({
                     0
                   ).toFixed(
                     0
-                  )} percent similarity`}
+                  )} similarity score out of 100`}
                   className={
                     active
                       ? "closest-row active"
@@ -114,7 +114,7 @@ export default function ClosestMatches({
                     ).toFixed(
                       0
                     )}
-                    %
+                    /100
                   </strong>
                 </button>
               );

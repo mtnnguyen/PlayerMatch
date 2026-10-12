@@ -59,7 +59,7 @@ export default function ModelView({
           <div className="model-guide-list">
             <article>
               <strong>Balanced</strong>
-              <p>Best default. Looks at the overall statistical profile.</p>
+              <p>Best default. Gives each of the ten statistical features equal weight.</p>
             </article>
             <article>
               <strong>Scoring / Playmaking / Defense</strong>
@@ -80,8 +80,8 @@ export default function ModelView({
           </div>
 
           <div className="model-guide-warning">
-            This model compares current statistical profiles. It is not a future
-            projection model yet.
+            These controls change statistical similarity only. The separate Outlook
+            forecast model is not affected by these settings.
           </div>
         </aside>
       </div>

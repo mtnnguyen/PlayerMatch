@@ -36,7 +36,7 @@ export default function CompactMatches({
               <small>{player.team}{player.position ? ` · ${player.position}` : ""}</small>
             </span>
             <strong className="compact-match-score">
-              {player.similarity.toFixed(0)}%
+              {player.similarity.toFixed(0)}/100
             </strong>
           </button>
         ))}

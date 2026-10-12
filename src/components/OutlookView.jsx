@@ -20,12 +20,14 @@ import MatchContext from "./MatchContext";
 
 import {
   featureLabel,
+  formatProjectionError,
   formatProjectionValue,
   performanceRead,
   playerProjectionStory,
   PROJECTION_TARGETS,
-  projectionConfidence,
+  projectionComparisonRead,
   projectionDirectionCopy,
+  projectionErrorBadge,
   projectionMeta,
 } from "../model/projection";
 
@@ -104,10 +106,10 @@ function ProjectionMetric({
   const meta =
     projectionMeta(target);
 
-  const confidence =
-    projectionConfidence(
-      row,
-      evaluation
+  const errorBadge =
+    projectionErrorBadge(
+      target,
+      row
     );
 
   return (
@@ -167,9 +169,9 @@ function ProjectionMetric({
         </span>
 
         <span
-          className={`projection-confidence projection-confidence--${confidence.tone}`}
+          className={`projection-confidence projection-confidence--${errorBadge.tone}`}
         >
-          {confidence.label}
+          {errorBadge.label}
         </span>
       </div>
     </button>
@@ -292,11 +294,14 @@ function ProjectionRead({
     return null;
   }
 
-  const projectedLeader =
-    leftRow.projected >=
-    rightRow.projected
-      ? left
-      : right;
+  const comparisonRead =
+    projectionComparisonRead(
+      target,
+      left,
+      right,
+      leftRow,
+      rightRow
+    );
 
   return (
     <aside className="v3-card projection-read-card">
@@ -319,29 +324,15 @@ function ProjectionRead({
 
       <article className="projection-read-lead">
         <span>
-          Headline
+          Point-estimate comparison
         </span>
 
         <strong>
-          {
-            projectedLeader.name
-          }{" "}
-          projects higher on{" "}
-          {meta.label.toLowerCase()}.
+          {comparisonRead?.headline}
         </strong>
 
         <p>
-          The current model projects{" "}
-          {left.name} at{" "}
-          {formatProjectionValue(
-            target,
-            leftRow.projected
-          )}{" "}
-          and {right.name} at{" "}
-          {formatProjectionValue(
-            target,
-            rightRow.projected
-          )}.
+          {comparisonRead?.detail}
         </p>
       </article>
 
@@ -369,8 +360,7 @@ function ProjectionRead({
         <p>
           The selected model's historical 80th-percentile absolute error is about{" "}
           <strong>
-            ±
-            {formatProjectionValue(
+            {formatProjectionError(
               target,
               leftRow.historicalErrorBand80
             )}
@@ -838,27 +828,15 @@ function PerformanceView({
                 </span>
 
                 <span
-                  className={
-                    row.evaluation
-                      ?.selectedModel ===
-                    "Baseline"
-                      ? "performance-neutral"
-                      : row.evaluation
-                          ?.holdout
-                          ?.beatsBaseline
-                      ? "performance-win"
-                      : "performance-loss"
-                  }
+                  className={`performance-${
+                    performanceRead(
+                      row.evaluation
+                    )?.tone ?? "neutral"
+                  }`}
                 >
-                  {row.evaluation
-                    ?.selectedModel ===
-                  "Baseline"
-                    ? "Baseline selected"
-                    : row.evaluation
-                        ?.holdout
-                        ?.beatsBaseline
-                    ? "Beat baseline"
-                    : "Baseline stronger"}
+                  {performanceRead(
+                    row.evaluation
+                  )?.resultLabel ?? "—"}
                 </span>
               </button>
             )

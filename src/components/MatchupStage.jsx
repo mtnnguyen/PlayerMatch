@@ -174,7 +174,7 @@ export default function MatchupStage({
         aria-live="polite"
       >
         <span className="model-label">
-          Model match
+          Similarity score
         </span>
 
         <div
@@ -182,9 +182,7 @@ export default function MatchupStage({
           style={{
             "--score": `${similarity}%`,
           }}
-          aria-label={`${similarity.toFixed(
-            1
-          )} percent similarity`}
+          aria-label={`${similarity.toFixed(1)} similarity score out of 100`}
         >
           <div>
             <strong>
@@ -193,7 +191,7 @@ export default function MatchupStage({
               )}
             </strong>
 
-            <span>%</span>
+            <span>/100</span>
           </div>
         </div>
 

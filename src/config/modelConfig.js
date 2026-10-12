@@ -35,7 +35,7 @@ const BALANCED_WEIGHTS = {
 export const PROFILES = {
   Balanced: {
     description:
-      "Equal emphasis across scoring, creation, defense and efficiency.",
+      "Equal weight on all ten statistical features.",
     weights: BALANCED_WEIGHTS,
   },
 

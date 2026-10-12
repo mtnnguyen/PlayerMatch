@@ -58,7 +58,7 @@ export function analystSummary(left, right, similarity, categories, profile, dri
 
   return {
     paragraph:
-      `${right.name} matches ${left.name} at ${similarity.toFixed(1)}% under the ${profile.toLowerCase()} model. ` +
+      `${right.name} has a ${similarity.toFixed(1)}/100 similarity score to ${left.name} under the ${profile.toLowerCase()} model. ` +
       `${driver ? `${driver.longLabel} is the largest positive similarity contributor. ` : ""}${edgeText}`,
     leftEdge: `${leftBest.name} · ${leftBest.left}th`,
     rightEdge: `${rightBest.name} · ${rightBest.right}th`,

@@ -79,7 +79,7 @@ export function buildDecisionBrief({
 
   return {
     summary:
-      `${right.name} is a ${similarity.toFixed(0)}% statistical match for ${left.name}. ` +
+      `${right.name} has a ${similarity.toFixed(0)}/100 statistical similarity score to ${left.name}. ` +
       `Their profiles line up most closely in ${closestCategory.name.toLowerCase()}, while ${biggestCategory.name.toLowerCase()} is the clearest category-level difference.`,
 
     why:

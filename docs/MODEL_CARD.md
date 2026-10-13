@@ -1,8 +1,8 @@
-# PlayerMatch V5 Model Card
+# PlayerMatch Model Card
 
 ## Purpose
 
-PlayerMatch V5 estimates selected NBA per-game statistics for the following season and exposes how the models were evaluated.
+PlayerMatch estimates selected NBA per-game statistics for the following season and exposes how the models were evaluated.
 
 Targets:
 
@@ -12,7 +12,7 @@ Targets:
 - TS%
 - USG%
 
-The projections are intended as a sports-analytics portfolio model and decision aid, not as guaranteed forecasts.
+The projections are intended as an exploratory sports analytics model and decision-support tool, not as guaranteed forecasts.
 
 ## Data
 
@@ -31,7 +31,7 @@ at least 15 games
 at least 10 minutes per game
 ```
 
-The current V5 build creates:
+The current build creates:
 
 ```text
 1,651 season-to-season training examples
@@ -150,7 +150,7 @@ This is a transparent practical tolerance, not the formal one-standard-error rul
 
 The latest fully observed target season is excluded from model-family selection.
 
-Current V5 holdout:
+Current holdout:
 
 ```text
 2025-26

@@ -2,22 +2,23 @@
 
 **Interpretable NBA player similarity, historical development, and next-season forecasting.**
 
-[Live App](https://playermatch.vercel.app) Â· [Research Paper](docs/PlayerMatch_Research_Paper.pdf) Â· [Model Card](docs/MODEL_CARD.md)
+[![PlayerMatch dashboard preview](doc/Picture.jpg)]
+[Live App](https://playermatch.vercel.app) · [Research Paper](docs/PlayerMatch_Research_Paper.pdf) · [Model Card](docs/MODEL_CARD.md)
 
 PlayerMatch is an NBA analytics project that combines player similarity, visual exploration, archetype discovery, multi-season development, and backtested next-season forecasting in one interface.
 
-The goal is not to make the most complicated model win. PlayerMatch compares simple and more flexible approaches, evaluates them chronologically, and surfaces where the model performs well â€” and where it does not.
+The goal is not to make the most complicated model win. PlayerMatch compares simple and more flexible approaches, evaluates them chronologically, and surfaces where the model performs well — and where it does not.
 
 ## Highlights
 
-- **420 eligible players** in the 2025â€“26 player pool
-- **6 seasons** of historical data from 2020â€“21 through 2025â€“26
+- **420 eligible players** in the 2025–26 player pool
+- **6 seasons** of historical data from 2020–21 through 2025–26
 - **1,651 player-season transitions** used for next-season forecasting
 - Weighted cosine similarity across **10 standardized basketball features**
 - PCA player-style maps and deterministic K-means archetypes
 - Multi-season similarity and player-development analysis
 - Ridge and Gradient Boosting forecasting with expanding-window validation
-- Persistence-baseline comparison and untouched 2025â€“26 holdout evaluation
+- Persistence-baseline comparison and untouched 2025–26 holdout evaluation
 - Subgroup diagnostics, empirical error bands, automated tests, and CI
 
 ## What the app can answer
@@ -37,13 +38,13 @@ The goal is not to make the most complicated model win. PlayerMatch compares sim
 
 PlayerMatch uses:
 
-`PTS Â· REB Â· AST Â· STL Â· BLK Â· FG% Â· 3P% Â· FT% Â· USG% Â· TS%`
+`PTS · REB · AST · STL · BLK · FG% · 3P% · FT% · USG% · TS%`
 
 Each feature is standardized relative to the active league pool. Player profiles are compared using weighted cosine similarity.
 
 Preset similarity profiles include **Balanced**, **Scoring**, **Playmaking**, and **Defense**, with a custom-weight mode for sensitivity analysis.
 
-The similarity score is a statistical-profile measure â€” **not player value, win impact, or interchangeability**.
+The similarity score is a statistical-profile measure — **not player value, win impact, or interchangeability**.
 
 ### Dimensionality reduction and archetypes
 
@@ -55,7 +56,7 @@ The similarity score is a statistical-profile measure â€” **not player valu
 
 Targets:
 
-`PTS Â· REB Â· AST Â· TS% Â· USG%`
+`PTS · REB · AST · TS% · USG%`
 
 Candidate models:
 
@@ -63,7 +64,7 @@ Candidate models:
 - Ridge Regression
 - Gradient Boosting
 
-Model-family selection uses **expanding-window validation**. If a simpler candidate is within **2% of the best validation MAE**, PlayerMatch chooses the simpler model. The final 2025â€“26 target season is held out from model-family selection.
+Model-family selection uses **expanding-window validation**. If a simpler candidate is within **2% of the best validation MAE**, PlayerMatch chooses the simpler model. The final 2025–26 target season is held out from model-family selection.
 
 ## Held-out results
 
@@ -138,18 +139,18 @@ GitHub Actions runs the JavaScript tests, Python projection-pipeline tests, and 
 
 ```text
 PlayerMatch/
-â”œâ”€â”€ .github/workflows/        # CI
-â”œâ”€â”€ docs/
-â”‚   â”œâ”€â”€ MODEL_CARD.md
-â”‚   â””â”€â”€ PlayerMatch_Research_Paper.pdf
-â”œâ”€â”€ public/                   # generated datasets
-â”œâ”€â”€ scripts/                  # data + forecasting pipeline
-â”œâ”€â”€ src/                      # React app + analytics models
-â”œâ”€â”€ tests/                    # JavaScript + Python tests
-â”œâ”€â”€ README.md
-â”œâ”€â”€ requirements.txt
-â”œâ”€â”€ package.json
-â””â”€â”€ vite.config.js
+├── .github/workflows/        # CI
+├── docs/
+│   ├── MODEL_CARD.md
+│   └── PlayerMatch_Research_Paper.pdf
+├── public/                   # generated datasets
+├── scripts/                  # data + forecasting pipeline
+├── src/                      # React app + analytics models
+├── tests/                    # JavaScript + Python tests
+├── README.md
+├── requirements.txt
+├── package.json
+└── vite.config.js
 ```
 
 ## Tech stack

@@ -2,7 +2,7 @@
 
 **Interpretable NBA player similarity, historical development, and next-season forecasting.**
 
-[![PlayerMatch dashboard preview](doc/Picture.jpg)]
+[![PlayerMatch dashboard preview](docs/PlayerMatch.jpg)]
 [Live App](https://playermatch.vercel.app) · [Research Paper](docs/PlayerMatch_Research_Paper.pdf) · [Model Card](docs/MODEL_CARD.md)
 
 PlayerMatch is an NBA analytics project that combines player similarity, visual exploration, archetype discovery, multi-season development, and backtested next-season forecasting in one interface.

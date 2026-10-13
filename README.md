@@ -1,136 +1,95 @@
 # PlayerMatch
 
-**NBA player similarity, visual analytics, historical development, and backtested next-season projections.**
+**Interpretable NBA player similarity, historical development, and next-season forecasting.**
 
-PlayerMatch is an interactive NBA analytics lab built to answer more than “who has similar box-score numbers?” It combines league-relative similarity, interpretable visual analysis, data-driven archetypes, multi-season trends, and next-season projection models in one front-office-style interface.
+[Live App](https://playermatch.vercel.app) Â· [Research Paper](docs/PlayerMatch_Research_Paper.pdf) Â· [Model Card](docs/MODEL_CARD.md)
 
-The product is built around a simple rule: **do the technical work underneath, then explain the result in basketball language without hiding the limitations.**
+PlayerMatch is an NBA analytics project that combines player similarity, visual exploration, archetype discovery, multi-season development, and backtested next-season forecasting in one interface.
 
-## What PlayerMatch can answer
+The goal is not to make the most complicated model win. PlayerMatch compares simple and more flexible approaches, evaluates them chronologically, and surfaces where the model performs well â€” and where it does not.
+
+## Highlights
+
+- **420 eligible players** in the 2025â€“26 player pool
+- **6 seasons** of historical data from 2020â€“21 through 2025â€“26
+- **1,651 player-season transitions** used for next-season forecasting
+- Weighted cosine similarity across **10 standardized basketball features**
+- PCA player-style maps and deterministic K-means archetypes
+- Multi-season similarity and player-development analysis
+- Ridge and Gradient Boosting forecasting with expanding-window validation
+- Persistence-baseline comparison and untouched 2025â€“26 holdout evaluation
+- Subgroup diagnostics, empirical error bands, automated tests, and CI
+
+## What the app can answer
 
 - Which NBA players have the most similar statistical profiles?
-- Why does the model think two players are similar?
-- Which statistics separate them most?
-- How unusual is each player relative to the league?
-- Where do players sit on a two-dimensional style map?
-- Which data-driven archetype does a player resemble?
-- How has a player’s profile changed across seasons?
-- Has a player comparison become more or less similar over time?
+- Why does the model consider two players similar?
+- How has a player's profile changed across seasons?
+- How has a player-pair similarity changed over time?
+- Where do players sit in a league-wide style map?
+- Which statistical archetype does a player resemble?
 - What does the historical data suggest for next season?
-- Did the projection model actually beat a simple baseline?
+- Did the forecasting model actually beat a simple persistence baseline?
 
-## Product views
+## Methods
 
-| View | Purpose |
-| --- | --- |
-| **Matchup** | Search players, compare a primary player with statistical matches, and read the decision brief. |
-| **Analysis** | Inspect similarity drivers, category differences, stability, and standardized evidence. |
-| **Visuals** | Explore league profiles, scatter plots, distributions, PCA style maps, match drivers, and K-means archetypes. |
-| **Trends** | Compare multi-season development and similarity-over-time. |
-| **Outlook** | View next-season projections, archetype journeys, and held-out model performance. |
-| **Model** | Change similarity profile, stat basis, comparison pool, and custom feature weights. |
+### Player representation
 
-## Analytics stack
+PlayerMatch uses:
 
-PlayerMatch currently demonstrates:
+`PTS Â· REB Â· AST Â· STL Â· BLK Â· FG% Â· 3P% Â· FT% Â· USG% Â· TS%`
 
-```text
-NBA Stats API ingestion
-→ data cleaning and eligibility filtering
-→ per-game / per-36 / per-100 views
-→ league standardization and percentiles
-→ weighted cosine similarity
-→ explainable similarity drivers
-→ sensitivity analysis
-→ interactive scatter and distribution analysis
-→ principal component analysis (PCA)
-→ K-means clustering and data-driven archetypes
-→ multi-season player development
-→ similarity through time
-→ historical archetype movement
-→ supervised regression
-→ expanding-window validation
-→ persistence-baseline comparison
-→ held-out backtesting
-→ feature importance
-→ next-season projections
-→ empirical historical error bands
-```
+Each feature is standardized relative to the active league pool. Player profiles are compared using weighted cosine similarity.
 
-## Similarity model
+Preset similarity profiles include **Balanced**, **Scoring**, **Playmaking**, and **Defense**, with a custom-weight mode for sensitivity analysis.
 
-PlayerMatch uses ten features:
+The similarity score is a statistical-profile measure â€” **not player value, win impact, or interchangeability**.
 
-```text
-PTS · REB · AST · STL · BLK · FG% · 3P% · FT% · USG% · TS%
-```
+### Dimensionality reduction and archetypes
 
-For the active player pool, every feature is standardized into a z-score:
+- **PCA** compresses the 10-dimensional standardized player space into two dimensions for visual exploration.
+- **K-means** identifies recurring statistical profiles in the full weighted feature space.
+- PCA is used only for visualization; clustering is performed in the full model space.
 
-```text
-z = (player value - league mean) / league standard deviation
-```
+### Next-season forecasting
 
-The standardized values are weighted and compared with cosine similarity. Preset profiles include **Balanced, Scoring, Playmaking, Defense**, plus a fully custom mode.
+Targets:
 
-The displayed match value is a **model similarity score**. It is not a probability, player-value rating, or claim that two players are interchangeable.
-
-## Predictive outlook
-
-V5 predicts next-season:
-
-```text
-PTS · REB · AST · TS% · USG%
-```
+`PTS Â· REB Â· AST Â· TS% Â· USG%`
 
 Candidate models:
 
-```text
-Persistence baseline: next season = current season
-Ridge Regression
-Gradient Boosting
-```
+- Persistence baseline
+- Ridge Regression
+- Gradient Boosting
 
-Model family is selected with **expanding-window validation** so later seasons are never used to predict earlier ones. PlayerMatch then applies a **2% simplicity tolerance**: if a simpler candidate is within 2% of the best validation MAE, the simpler model is preferred. The latest observed target season is then held out for a final backtest.
+Model-family selection uses **expanding-window validation**. If a simpler candidate is within **2% of the best validation MAE**, PlayerMatch chooses the simpler model. The final 2025â€“26 target season is held out from model-family selection.
 
-Current V5 evaluation uses:
+## Held-out results
 
-```text
-Historical seasons: 2020-21 through 2025-26
-Training examples: 1,651 player-season transitions
-Holdout target season: 2025-26
-Projection season: 2026-27
-```
+| Target | Selected model | Model MAE | Persistence MAE | Improvement |
+| --- | --- | ---: | ---: | ---: |
+| PTS | Ridge | 2.634 | 2.843 | 7.4% |
+| REB | Ridge | 0.814 | 0.865 | 5.9% |
+| AST | Ridge | 0.733 | 0.746 | 1.7% |
+| TS% | Ridge | 3.107 | 3.487 | 10.9% |
+| USG% | Ridge | 2.141 | 2.314 | 7.5% |
 
-### Held-out results
+The results suggest that extra model complexity did not automatically improve next-season forecasts. Ridge remained competitive across all five targets, while the benefit over persistence varied substantially by statistic.
 
-| Target | Selected model | Model MAE | Baseline MAE | Read |
-| --- | --- | ---: | ---: | --- |
-| PTS | Ridge | 2.634 | 2.843 | Meaningful improvement (7.4%) |
-| REB | Ridge | 0.814 | 0.865 | Meaningful improvement (5.9%) |
-| AST | Ridge | 0.733 | 0.746 | Essentially tied (1.7%) |
-| TS% | Ridge | 3.107 | 3.487 | Strong improvement (10.9%) |
-| USG% | Ridge | 2.141 | 2.314 | Meaningful improvement (7.5%) |
-
-The goal is not to make the most complicated model win. If a simpler model is effectively tied during validation, PlayerMatch prefers the simpler option; if a simple baseline is stronger, PlayerMatch reports that result instead of hiding it.
-
-The final holdout is also checked across **source-season scoring level, age, and minutes groups**. These subgroup results are descriptive diagnostics rather than significance tests.
-
-See [MODEL_CARD_V5.md](MODEL_CARD_V5.md) for methodology, evaluation design, and limitations.
+The strongest overall improvement was for **TS%**, but subgroup analysis showed an important limitation: among the source-season **top 10% of scorers**, persistence produced lower TS% error and the model showed negative mean signed error.
 
 ## Data
 
-Source: **NBA Stats API** via `nba_api`.
+Source: **NBA Stats API** via `nba_api`
 
-Default player eligibility:
+Default eligibility:
 
-```text
-Regular season
-Minimum 15 games
-Minimum 10 minutes per game
-```
+- Regular season
+- Minimum 15 games
+- Minimum 10 minutes per game
 
-The deployed app uses generated static datasets:
+Generated datasets:
 
 ```text
 public/players.json
@@ -138,11 +97,7 @@ public/player_history.json
 public/projections.json
 ```
 
-The current build contains 420 eligible 2025-26 players and six regular seasons of history.
-
 ## Run locally
-
-Frontend:
 
 ```powershell
 npm install
@@ -163,77 +118,13 @@ Rebuild historical data and projections:
 python scripts/build_v5.py
 ```
 
-If `player_history.json` is already current and you only want to retrain projection models:
+Retrain projections from an existing history file:
 
 ```powershell
 python scripts/build_v5.py --skip-history
 ```
 
-For a fuller walkthrough, see [V5_SETUP.md](V5_SETUP.md).
-
-## Technical choices
-
-### Why z-scores?
-They put statistics with different raw scales into comparable league-relative units.
-
-### Why cosine similarity?
-It compares the direction and shape of multi-feature statistical profiles rather than relying on one raw-distance scale.
-
-### Why PCA?
-It compresses the ten-dimensional standardized feature space into two display dimensions for visual exploration. The two-dimensional map is a summary, not the full model.
-
-### Why K-means?
-It provides a transparent way to discover recurring statistical profiles. Cluster names are generated from underlying cluster traits and should be interpreted as data-driven descriptions, not official basketball roles.
-
-### Why time-based validation?
-Future-season projections should be evaluated in chronological order. Randomly mixing player-seasons across train and test sets can create an unrealistically easy evaluation.
-
-### Why a persistence baseline?
-A forecasting model should prove it adds value over the simple rule that next season looks like the current season.
-
-## Important limitations
-
-PlayerMatch does **not** directly model:
-
-- injuries or availability probability
-- trades and roster changes
-- coaching changes
-- teammate and lineup context
-- contract incentives
-- playoff role
-- detailed tracking data
-- complete defensive impact
-- total player value
-
-Projection training also requires a player to remain eligible in the following season, which creates survivorship / availability bias. Historical error bands summarize past validation errors; they are not formal confidence intervals.
-
-## Testing and continuous integration
-
-PlayerMatch includes deterministic model tests for the core analytics and projection pipeline.
-
-Frontend / analytics tests cover:
-
-```text
-cosine-similarity symmetry and self-match behavior
-percentile tie handling
-comparison-pool filtering
-ranked-match ordering
-deterministic K-means clustering
-PCA axis orthogonality and finite projections
-```
-
-Projection-pipeline tests cover:
-
-```text
-season chronology
-season-t to season-(t+1) feature construction
-future-target leakage checks
-final-holdout isolation
-2% simplicity-aware model selection
-generated projection JSON schema and finite outputs
-```
-
-Run locally:
+## Tests
 
 ```powershell
 npm test
@@ -241,40 +132,37 @@ python -m unittest discover -s tests/python -p "test_*.py" -v
 npm run build
 ```
 
-GitHub Actions runs the JavaScript tests, Python pipeline tests, and production build on pushes to `main` and on pull requests.
-
-## Tech stack
-
-**Frontend:** React, Vite, JavaScript, SVG, Lucide React  
-**Data / ML:** Python, pandas, NumPy, scikit-learn, `nba_api`  
-**Models:** weighted cosine similarity, PCA, K-means, Ridge Regression, Gradient Boosting  
-**Deployment:** Vercel
+GitHub Actions runs the JavaScript tests, Python projection-pipeline tests, and production build on pushes to `main` and pull requests.
 
 ## Repository structure
 
 ```text
 PlayerMatch/
-├── public/
-│   ├── players.json
-│   ├── player_history.json
-│   └── projections.json
-├── scripts/
-│   ├── build_player_history.py
-│   ├── build_v5.py
-│   └── train_projection_models.py
-├── src/
-│   ├── components/
-│   ├── config/
-│   ├── hooks/
-│   ├── model/
-│   └── styles/
-├── MODEL_CARD_V5.md
-├── V5_SETUP.md
-└── requirements.txt
+â”œâ”€â”€ .github/workflows/        # CI
+â”œâ”€â”€ docs/
+â”‚   â”œâ”€â”€ MODEL_CARD.md
+â”‚   â””â”€â”€ PlayerMatch_Research_Paper.pdf
+â”œâ”€â”€ public/                   # generated datasets
+â”œâ”€â”€ scripts/                  # data + forecasting pipeline
+â”œâ”€â”€ src/                      # React app + analytics models
+â”œâ”€â”€ tests/                    # JavaScript + Python tests
+â”œâ”€â”€ README.md
+â”œâ”€â”€ requirements.txt
+â”œâ”€â”€ package.json
+â””â”€â”€ vite.config.js
 ```
 
-## Product principle
+## Tech stack
 
-PlayerMatch is intentionally built as an **analysis tool rather than a prediction oracle**. Similarity is not player value, clustering is not objective basketball truth, correlation is not causation, and a projection is not a guaranteed outcome.
+**Frontend:** React, Vite, JavaScript, SVG, Lucide React
+**Data / ML:** Python, pandas, NumPy, scikit-learn, `nba_api`
+**Methods:** weighted cosine similarity, PCA, K-means, Ridge Regression, Gradient Boosting
+**Deployment:** Vercel
 
-The useful question is not just *“what does the model output?”* but also *“why, how stable is it, how well did it backtest, and what should we not conclude from it?”*
+## Limitations
+
+PlayerMatch does not directly model injuries, transactions, coaching changes, teammate/lineup context, contracts, playoff roles, or detailed tracking data.
+
+Training transitions also require a player to remain eligible in the following season, introducing survivorship / availability bias. Historical error bands summarize past model errors and are not formal confidence intervals.
+
+For methodology, evaluation details, subgroup diagnostics, and responsible interpretation, see the [model card](docs/MODEL_CARD.md).

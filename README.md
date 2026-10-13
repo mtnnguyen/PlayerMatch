@@ -7,7 +7,7 @@
 
 PlayerMatch is an NBA analytics project that combines player similarity, visual exploration, archetype discovery, multi-season development, and backtested next-season forecasting in one interface.
 
-The goal is not to make the most complicated model win. PlayerMatch compares simple and more flexible approaches, evaluates them chronologically, and surfaces where the model performs well — and where it does not.
+I built the forecasting section to test a simple question: does a more flexible model actually improve next-season predictions over simpler baselines?
 
 ## Highlights
 

@@ -40,7 +40,7 @@ PlayerMatch uses:
 
 `PTS · REB · AST · STL · BLK · FG% · 3P% · FT% · USG% · TS%`
 
-Each feature is standardized relative to the active league pool. Player profiles are compared using weighted cosine similarity.
+Each feature is standardized relative to the active league pool. I compare player profiles using weighted cosine similarity.
 
 Preset similarity profiles include **Balanced**, **Scoring**, **Playmaking**, and **Defense**, with a custom-weight mode for sensitivity analysis.
 
@@ -78,7 +78,7 @@ Model-family selection uses **expanding-window validation**. If a simpler candid
 
 The results suggest that extra model complexity did not automatically improve next-season forecasts. Ridge remained competitive across all five targets, while the benefit over persistence varied substantially by statistic.
 
-The strongest overall improvement was for **TS%**, but subgroup analysis showed an important limitation: among the source-season **top 10% of scorers**, persistence produced lower TS% error and the model showed negative mean signed error.
+The greatest overall improvement was for **TS%**, but subgroup analysis showed an important limitation: among the source-season **top 10% of scorers**, persistence produced lower TS% error and the model showed negative mean signed error.
 
 ## Data
 
@@ -113,18 +113,6 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Rebuild historical data and projections:
-
-```powershell
-python scripts/build_v5.py
-```
-
-Retrain projections from an existing history file:
-
-```powershell
-python scripts/build_v5.py --skip-history
-```
-
 ## Tests
 
 ```powershell
@@ -133,37 +121,9 @@ python -m unittest discover -s tests/python -p "test_*.py" -v
 npm run build
 ```
 
-GitHub Actions runs the JavaScript tests, Python projection-pipeline tests, and production build on pushes to `main` and pull requests.
-
-## Repository structure
-
-```text
-PlayerMatch/
-├── .github/workflows/        # CI
-├── docs/
-│   ├── MODEL_CARD.md
-│   └── PlayerMatch_Research_Paper.pdf
-├── public/                   # generated datasets
-├── scripts/                  # data + forecasting pipeline
-├── src/                      # React app + analytics models
-├── tests/                    # JavaScript + Python tests
-├── README.md
-├── requirements.txt
-├── package.json
-└── vite.config.js
-```
-
 ## Tech stack
 
 **Frontend:** React, Vite, JavaScript, SVG, Lucide React
 **Data / ML:** Python, pandas, NumPy, scikit-learn, `nba_api`
 **Methods:** weighted cosine similarity, PCA, K-means, Ridge Regression, Gradient Boosting
 **Deployment:** Vercel
-
-## Limitations
-
-PlayerMatch does not directly model injuries, transactions, coaching changes, teammate/lineup context, contracts, playoff roles, or detailed tracking data.
-
-Training transitions also require a player to remain eligible in the following season, introducing survivorship / availability bias. Historical error bands summarize past model errors and are not formal confidence intervals.
-
-For methodology, evaluation details, subgroup diagnostics, and responsible interpretation, see the [model card](docs/MODEL_CARD.md).

@@ -1,0 +1,953 @@
+/* Mobile and tablet overrides. Keep this stylesheet after v3.css. */
+
+@media (max-width: 980px) {
+  html,
+  body,
+  #root {
+    height: auto;
+  }
+
+  body {
+    overflow: auto;
+  }
+
+  .v3-shell {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    grid-template-rows: auto auto;
+    overflow: visible;
+  }
+
+  .v3-stage {
+    height: auto;
+    min-height: 0;
+    min-width: 0;
+    padding: 10px 12px max(24px, env(safe-area-inset-bottom));
+    overflow: visible;
+  }
+
+  .v3-stage :where(section, article, aside, nav, div, fieldset) {
+    min-width: 0;
+  }
+
+  .v3-view {
+    display: block;
+    height: auto;
+  }
+
+  /* Header and navigation */
+
+  .v3-header {
+    height: auto;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .workbench-brand {
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .brand-mark {
+    flex-shrink: 0;
+  }
+
+  .workbench-meta {
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .v3-model-status {
+    display: none;
+  }
+
+  .header-help {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+  }
+
+  .v3-nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    width: 100%;
+    min-width: 0;
+    gap: 4px;
+    overflow: visible;
+  }
+
+  .v3-nav button {
+    justify-content: center;
+    min-width: 0;
+    min-height: 44px;
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+
+  .v3-nav button svg {
+    display: none;
+  }
+
+  /* Stack player cards instead of squeezing three columns together. */
+
+  .matchup-view .matchup-stage {
+    height: auto;
+    grid-template-columns: minmax(0, 1fr);
+    overflow: visible;
+  }
+
+  .matchup-view .stage-player {
+    display: block;
+    padding: 18px;
+  }
+
+  .stage-player--left {
+    box-shadow: inset 4px 0 0 var(--blue);
+  }
+
+  .stage-player--right {
+    box-shadow: inset 4px 0 0 var(--orange);
+  }
+
+  .stage-player:focus-within {
+    z-index: 50;
+  }
+
+  .matchup-view .stage-player-copy {
+    padding: 0;
+    text-align: left;
+  }
+
+  .stage-player h1 {
+    max-width: none;
+    margin: 0;
+    padding-right: 110px;
+    font-size: clamp(28px, 5vw, 38px);
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+  }
+
+  .stage-player .player-meta {
+    min-height: 40px;
+    padding-right: 110px;
+    font-size: 13px;
+  }
+
+  .matchup-view .player-portrait--large {
+    position: absolute;
+    top: 18px;
+    right: 14px;
+    bottom: auto;
+    left: auto;
+    width: 100px;
+    height: 112px;
+    pointer-events: none;
+  }
+
+  .stage-player .archetype-row {
+    align-items: flex-start;
+    margin-top: 12px;
+  }
+
+  .archetype-row span {
+    font-size: 12px;
+  }
+
+  .stage-player .stage-line {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    justify-content: normal;
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .stage-line strong {
+    font-size: 23px;
+  }
+
+  .stage-line small {
+    font-size: 12px;
+  }
+
+  /* Compact similarity score between the two players. */
+
+  .matchup-center {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    align-content: center;
+    min-height: 0;
+    gap: 8px 16px;
+    padding: 18px;
+    border-block: 1px solid #292f38;
+  }
+
+  .matchup-center .similarity-dial {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    width: 88px;
+    height: 88px;
+  }
+
+  .similarity-dial strong {
+    font-size: 30px;
+  }
+
+  .matchup-center .model-label,
+  .matchup-center .match-label,
+  .matchup-center .match-profile-label {
+    grid-column: 2;
+    margin: 0;
+  }
+
+  .swap-button {
+    grid-column: 1 / -1;
+    justify-content: center;
+    min-height: 44px;
+    margin-top: 4px;
+  }
+
+  /* Search menus fit either player card. */
+
+  .slot-search {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 18px;
+  }
+
+  .slot-search > svg {
+    flex-shrink: 0;
+  }
+
+  .slot-search input {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .slot-search-menu,
+  .slot-search--right .slot-search-menu {
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 320px;
+    max-height: min(320px, 45dvh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .slot-search-menu button {
+    grid-template-columns: 38px minmax(0, 1fr) 16px;
+    min-height: 60px;
+    gap: 7px;
+    padding: 8px;
+  }
+
+  .slot-search-menu .player-portrait--search {
+    width: 38px;
+    height: 42px;
+  }
+
+  .slot-search-menu small {
+    white-space: normal;
+  }
+
+  /* Use one column throughout the other views. */
+
+  .matchup-view-bottom,
+  .analysis-view-grid,
+  .analysis-view-rail,
+  .visuals-view-grid,
+  .visual-analytics-grid,
+  .historical-grid,
+  .model-view-grid,
+  .outlook-projection-grid,
+  .outlook-journey-grid,
+  .model-performance-grid,
+  .outlook-player-stack,
+  .outlook-journey-stack {
+    height: auto;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    gap: 12px;
+  }
+
+  .matchup-view-bottom {
+    margin-top: 12px;
+  }
+
+  .visual-workspace,
+  .visual-workspace > *,
+  .outlook-workspace,
+  .outlook-workspace > * {
+    height: auto;
+  }
+
+  /* Let cards grow with their content instead of clipping it. */
+
+  .v3-stage .v3-card,
+  .v3-stage .analysis-card,
+  .analysis-view .stat-battle-panel {
+    display: block;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .v3-card-title,
+  .analysis-heading,
+  .analysis-card-title {
+    height: auto;
+    min-height: 58px;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .v3-card-title h3,
+  .analysis-card-title h3 {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .v3-stage p {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .v3-stage small {
+    font-size: 12px;
+  }
+
+  .decision-summary {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px;
+  }
+
+  .brief-grid {
+    grid-template-rows: none;
+    grid-auto-rows: auto;
+  }
+
+  .brief-item {
+    padding: 12px;
+  }
+
+  .brief-item span,
+  .decision-summary strong {
+    font-size: 11px;
+  }
+
+  .forecast-note {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .forecast-note svg {
+    flex-shrink: 0;
+  }
+
+  .compact-matches-list {
+    grid-auto-rows: auto;
+  }
+
+  .compact-matches-list button {
+    min-height: 60px;
+    padding: 8px 12px;
+  }
+
+  .compact-match-copy strong {
+    font-size: 14px;
+  }
+
+  .compact-match-copy small {
+    font-size: 12px;
+  }
+
+  /* Shared matchup summary */
+
+  .match-context {
+    grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr);
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .match-context-player strong {
+    white-space: normal;
+    font-size: 14px;
+  }
+
+  .match-context-player small {
+    font-size: 11px;
+  }
+
+  .match-context-actions {
+    grid-column: 1 / -1;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .match-context-actions button {
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  /* Analysis */
+
+  .analysis-heading {
+    flex-wrap: wrap;
+  }
+
+  .analysis-player-labels {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .analysis-view .battle-table {
+    display: block;
+    padding: 0 10px;
+  }
+
+  .analysis-view .battle-row {
+    grid-template-columns: 58px minmax(0, 1fr) 58px;
+    min-height: 76px;
+    gap: 8px;
+  }
+
+  .analysis-view .battle-value strong {
+    font-size: 18px;
+  }
+
+  .analysis-view .battle-value span {
+    font-size: 11px;
+  }
+
+  .analysis-view .battle-label {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  .analysis-view .percentile-key {
+    flex-wrap: wrap;
+    font-size: 11px;
+  }
+
+  .analysis-view-rail .driver-list,
+  .analysis-view-rail .difference-list,
+  .analysis-view-rail .stability-list {
+    display: block;
+  }
+
+  .analysis-view-rail .driver-row,
+  .analysis-view-rail .difference-list > div {
+    min-height: 48px;
+    padding: 10px;
+  }
+
+  .analysis-view-rail .stability-row {
+    min-height: 44px;
+  }
+
+  /* Wrap view switches so every option is visible. */
+
+  .visual-switcher,
+  .trend-switcher,
+  .outlook-switcher {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .visual-switcher > div:first-child,
+  .trend-switcher > div:first-child,
+  .outlook-switcher > div:first-child {
+    flex-wrap: wrap;
+  }
+
+  .visual-switcher-buttons,
+  .trend-switcher > div:last-child,
+  .outlook-switcher > div:last-child {
+    width: 100%;
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .visual-switcher-buttons button,
+  .trend-switcher button,
+  .outlook-switcher button {
+    flex: 1 1 120px;
+    justify-content: center;
+    min-height: 44px;
+    font-size: 12px;
+  }
+
+  /* Chart controls */
+
+  .analytics-chart-title,
+  .historical-chart-title {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .chart-selectors,
+  .style-map-controls,
+  .archetype-controls {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .chart-selectors label,
+  .style-map-controls label,
+  .archetype-controls label {
+    flex: 1 1 120px;
+    min-width: 0;
+  }
+
+  .single-chart-selector,
+  .historical-stat-select {
+    width: 100%;
+  }
+
+  .v3-stage select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    height: auto;
+    font-size: 16px;
+  }
+
+  /* Existing SVG charts use desktop coordinates.
+     Keep them readable inside a horizontally scrollable panel. */
+
+  .scatter-wrap,
+  .distribution-wrap,
+  .style-map-wrap,
+  .archetype-map-wrap,
+  .historical-chart-wrap {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
+    padding: 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  .scatter-chart,
+  .distribution-chart,
+  .style-map-chart,
+  .archetype-map-chart,
+  .historical-line-chart {
+    display: block;
+    width: 760px;
+    min-width: 760px;
+    max-width: none;
+    height: 430px;
+    min-height: 430px;
+  }
+
+  .scatter-tick,
+  .distribution-tick,
+  .historical-axis-tick,
+  .scatter-axis-label,
+  .style-map-axis-label,
+  .scatter-player-label,
+  .style-map-player-label,
+  .distribution-player-label,
+  .distribution-median-label,
+  .historical-score-label {
+    font-size: 12px;
+  }
+
+  .scatter-player-label,
+  .style-map-player-label {
+    pointer-events: none;
+  }
+
+  .scatter-hover-readout,
+  .style-map-hover,
+  .archetype-map-hover,
+  .distribution-key,
+  .historical-legend,
+  .friendly-legend {
+    min-height: 44px;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    padding: 10px;
+  }
+
+  .scatter-hover-readout span,
+  .style-map-hover span,
+  .archetype-map-hover span {
+    white-space: normal;
+    overflow: visible;
+    font-size: 12px;
+  }
+
+  /* Match Drivers */
+
+  .driver-chart {
+    grid-template-rows: none;
+    padding: 0 10px;
+  }
+
+  .driver-chart-row {
+    grid-template-columns: 20px 70px minmax(0, 1fr) 42px;
+    min-height: 52px;
+    gap: 6px;
+  }
+
+  .driver-chart-label span {
+    display: none;
+  }
+
+  .driver-chart-label strong,
+  .driver-chart-value,
+  .driver-chart-footer {
+    font-size: 12px;
+  }
+
+  /* League Profile */
+
+  .league-profile-title {
+    flex-direction: column;
+  }
+
+  .profile-help {
+    width: 100%;
+    max-width: none;
+  }
+
+  .profile-help summary {
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  .profile-help > div {
+    position: static;
+    width: 100%;
+    font-size: 12px;
+    box-shadow: none;
+  }
+
+  .friendly-scale {
+    padding: 10px 4px;
+    font-size: 10px;
+  }
+
+  .friendly-profile-rows {
+    display: block;
+    overflow: visible;
+  }
+
+  .friendly-profile-row {
+    grid-template-columns: 62px minmax(0, 1fr);
+    grid-template-areas:
+      "feature track"
+      "left right";
+    gap: 8px;
+    padding: 12px 0;
+  }
+
+  .friendly-feature {
+    grid-area: feature;
+  }
+
+  .friendly-track {
+    grid-area: track;
+  }
+
+  .friendly-read--left {
+    grid-area: left;
+  }
+
+  .friendly-read--right {
+    grid-area: right;
+  }
+
+  .friendly-feature strong,
+  .friendly-read strong {
+    font-size: 12px;
+  }
+
+  .friendly-feature span,
+  .friendly-read span {
+    font-size: 11px;
+  }
+
+  .friendly-summary-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .friendly-summary-strip p {
+    padding: 12px;
+    border-right: 0;
+    border-bottom: 1px solid #303742;
+  }
+
+  .style-map-neighbors button,
+  .archetype-neighbors button {
+    min-height: 44px;
+    padding: 8px;
+  }
+
+  .visual-advanced-detail {
+    padding: 12px;
+    font-size: 12px;
+  }
+
+  .visual-advanced-detail summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* Model controls */
+
+  .model-controls-card .controls-deck {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding: 12px;
+  }
+
+  .control-divider {
+    display: none;
+  }
+
+  .model-controls-card .control-buttons button,
+  .custom-weights-heading button {
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  .model-controls-card .control-group p,
+  .model-controls-card .custom-weights-note {
+    font-size: 13px;
+  }
+
+  .custom-weights-heading {
+    flex-wrap: wrap;
+  }
+
+  .weight-control-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .model-controls-card .weight-control {
+    grid-template-columns: 78px minmax(0, 1fr) 32px;
+    min-height: 60px;
+    gap: 8px;
+  }
+
+  .model-controls-card .weight-control strong {
+    font-size: 13px;
+  }
+
+  .model-controls-card .weight-control small {
+    font-size: 11px;
+  }
+
+  .weight-control input[type="range"] {
+    min-width: 0;
+    height: 44px;
+    margin: 0;
+  }
+
+  .weight-drawer > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .model-guide-list {
+    display: block;
+  }
+
+  /* Outlook */
+
+  .player-projection-heading {
+    min-height: 72px;
+    padding: 12px;
+  }
+
+  .player-projection-heading h3 {
+    white-space: normal;
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .projection-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .projection-metric {
+    min-height: 134px;
+    padding: 12px;
+    border-bottom: 1px solid #ddd9d1;
+  }
+
+  .projection-metric:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .projection-metric-values strong {
+    font-size: 22px;
+  }
+
+  .projection-direction,
+  .projection-error,
+  .projection-watch-note {
+    font-size: 11px;
+  }
+
+  .archetype-journey-line {
+    overscroll-behavior-x: contain;
+  }
+
+  .archetype-journey-line > article {
+    flex-basis: 130px;
+    min-height: 100px;
+  }
+
+  .archetype-journey-line > article > strong {
+    font-size: 13px;
+  }
+
+  /* Keep the baseline column visible on phones. */
+
+  .performance-table-head,
+  .performance-table-body button {
+    grid-template-columns:
+      minmax(0, 1.1fr)
+      minmax(0, 1fr)
+      repeat(3, minmax(0, 0.85fr));
+    gap: 4px;
+    padding: 10px 6px;
+    overflow-wrap: anywhere;
+  }
+
+  .performance-table-head {
+    font-size: 10px;
+  }
+
+  .performance-table-head span:nth-child(4),
+  .performance-table-body button > span:nth-child(4) {
+    display: block;
+  }
+
+  .performance-table-body {
+    display: block;
+  }
+
+  .performance-table-body button {
+    width: 100%;
+    min-height: 80px;
+  }
+
+  .performance-table-body span,
+  .performance-table-body strong {
+    font-size: 11px;
+  }
+
+  /* Methodology modal */
+
+  .modal-backdrop {
+    padding: 12px;
+  }
+
+  .method-modal {
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    overscroll-behavior: contain;
+  }
+
+  .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .modal-header h2 {
+    font-size: 22px;
+  }
+
+  .modal-header button {
+    min-width: 44px;
+    min-height: 44px;
+    flex-shrink: 0;
+  }
+
+  .method-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .method-grid article {
+    grid-template-columns: 28px minmax(0, 1fr);
+    min-height: 0;
+    gap: 10px;
+    padding: 16px;
+    border-right: 0;
+  }
+
+  .method-grid p,
+  .method-warning {
+    font-size: 14px;
+  }
+
+  .history-missing code,
+  .outlook-missing code {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 600px) {
+  .v3-nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .brief-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .brief-item {
+    border-right: 0;
+  }
+
+  .workbench-brand span {
+    font-size: 10px;
+  }
+
+  .v3-stage {
+    padding-inline: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .workbench-brand span {
+    display: none;
+  }
+
+  .workbench-meta {
+    gap: 6px;
+  }
+
+  .season-chip {
+    padding: 6px;
+    font-size: 11px;
+  }
+
+  .stage-line strong {
+    font-size: 20px;
+  }
+
+  .matchup-view .stage-player {
+    padding: 14px;
+  }
+}

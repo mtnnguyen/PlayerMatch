@@ -82,11 +82,5 @@ next season = current season
 
 If the persistence baseline is competitive within the time-based selection tolerance, the product can prefer and report that simpler result.
 
-See:
-
-```text
-MODEL_CARD_V5.md
-V5_SETUP.md
-```
-
-for the complete methodology and setup.
+See the [model card](../docs/MODEL_CARD.md) for methodology and the
+[reproducibility guide](../docs/REPRODUCIBILITY.md) for verified setup commands.

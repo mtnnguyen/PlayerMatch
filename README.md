@@ -3,7 +3,7 @@
 **Interpretable NBA player similarity, historical development, and next-season forecasting.**
 
 ![PlayerMatch dashboard preview](docs/PlayerMatch.jpg)
-[Live App](https://playermatch.vercel.app) · [Research Paper](docs/PlayerMatch_Research_Paper.pdf) · [Model Card](docs/MODEL_CARD.md)
+[Live App](https://playermatch.vercel.app) · [Research Paper](docs/PlayerMatch_Research_Paper.pdf) · [Model Card](docs/MODEL_CARD.md) · [Case study](docs/CASE_STUDY.md) · [Reproduce](docs/REPRODUCIBILITY.md)
 
 PlayerMatch is an NBA analytics project that combines player similarity, visual exploration, archetype discovery, multi-season development, and backtested next-season forecasting in one interface.
 
@@ -101,7 +101,7 @@ public/projections.json
 ## Run locally
 
 ```powershell
-npm install
+npm ci
 npm run dev
 ```
 
@@ -110,7 +110,7 @@ Python environment:
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+python -m pip install -r requirements-offline.txt
 ```
 
 ## Tests
@@ -127,3 +127,5 @@ npm run build
 **Data / ML:** Python, pandas, NumPy, scikit-learn, `nba_api`
 **Methods:** weighted cosine similarity, PCA, K-means, Ridge Regression, Gradient Boosting
 **Deployment:** Vercel
+
+Cached-data training and tests use the pinned Python 3.12 environment in `requirements-offline.txt`. NBA API ingestion is a separate workflow; see [reproducibility](docs/REPRODUCIBILITY.md) before refreshing data.

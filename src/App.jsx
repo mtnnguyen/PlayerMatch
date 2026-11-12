@@ -32,9 +32,10 @@ export default function App() {
 
   if (model.loadError) {
     return (
-      <div className="loading-screen">
+      <div className="loading-screen" role="alert">
         <strong>PlayerMatch could not start.</strong>
         <span>{model.loadError}</span>
+        <button type="button" onClick={model.reloadPlayers}>Try again</button>
       </div>
     );
   }

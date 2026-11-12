@@ -83,6 +83,7 @@ function TrendCard({
 function HistoryMissing({
   message,
   loading = false,
+  onRetry,
 }) {
   return (
     <section className="history-missing v3-card">
@@ -112,11 +113,7 @@ function HistoryMissing({
         </p>
       </div>
 
-      {!loading && (
-        <code>
-          python scripts/build_player_history.py
-        </code>
-      )}
+      {!loading && <button type="button" onClick={onRetry}>Try again</button>}
     </section>
   );
 }
@@ -159,6 +156,7 @@ export default function TrendsView({
         />
 
         <HistoryMissing
+          onRetry={() => model.loadHistory(true)}
           message={
             model.historyError
           }

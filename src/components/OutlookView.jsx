@@ -40,6 +40,7 @@ import {
 function OutlookMissing({
   message,
   loading = false,
+  onRetry,
 }) {
   return (
     <section className="outlook-missing v3-card">
@@ -67,17 +68,7 @@ function OutlookMissing({
             "The rest of PlayerMatch works normally. Outlook needs the generated projection dataset."}
       </p>
 
-      {!loading && (
-        <div>
-          <code>
-            python scripts/build_player_history.py
-          </code>
-
-          <code>
-            python scripts/train_projection_models.py
-          </code>
-        </div>
-      )}
+      {!loading && <button type="button" onClick={onRetry}>Try again</button>}
     </section>
   );
 }
@@ -113,6 +104,7 @@ function OutlookHistoryState({
           : model.historyError ||
             "Archetype Journey needs the generated multi-season dataset."}
       </p>
+      {!loading && <button type="button" onClick={() => model.loadHistory(true)}>Try again</button>}
     </section>
   );
 }
@@ -1045,8 +1037,7 @@ function PerformanceView({
               {formatProjectionError(
                 activeTarget,
                 active
-                  ?.historicalErrorBand80 ??
-                  0
+                  ?.historicalErrorBand80
               )}
             </strong>
             {" "}at the 80th percentile of historical absolute validation errors.
@@ -1159,6 +1150,7 @@ export default function OutlookView({
         />
 
         <OutlookMissing
+          onRetry={() => model.loadProjections(true)}
           message={
             model.projectionError
           }

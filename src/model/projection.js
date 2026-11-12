@@ -454,6 +454,17 @@ export function projectionComparisonRead(
     `${right.name}: ${formatProjectionValue(target, rightRow.projected)}. ` +
     `Point-estimate gap: ${gapText}.`;
 
+  if (gap === 0) {
+    return {
+      headline:
+        `Both players have the same point estimate for ${projectionMeta(
+          target
+        ).label.toLowerCase()}.`,
+      detail:
+        `${detail} Equal point estimates do not imply identical actual outcomes.`,
+    };
+  }
+
   if (errorBand > 0 && gap < errorBand) {
     return {
       headline:

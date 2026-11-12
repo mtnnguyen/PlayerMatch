@@ -428,7 +428,7 @@ class ProjectionArtifactTests(unittest.TestCase):
         players = (
             self.payload[
                 "players"
-            ][:25]
+            ]
         )
 
         self.assertGreater(

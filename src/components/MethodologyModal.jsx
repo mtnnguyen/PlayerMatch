@@ -87,33 +87,49 @@ export default function MethodologyModal({
   open,
   onClose,
 }) {
-  const closeRef =
-    useRef(null);
+  const closeRef = useRef(null);
+  const dialogRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
-    if (!open) {
-      return undefined;
-    }
-
+    if (!open) return undefined;
+    const opener = document.activeElement;
+    const dialog = dialogRef.current;
+    const background = Array.from(dialog.parentElement.parentElement.children)
+      .filter((element) => !element.contains(dialog));
+    const previousInert = background.map((element) => element.hasAttribute("inert"));
+    background.forEach((element) => element.setAttribute("inert", ""));
     closeRef.current?.focus();
 
     function onKeyDown(event) {
       if (event.key === "Escape") {
-        onClose();
+        event.preventDefault();
+        onCloseRef.current();
+      }
+      if (event.key !== "Tab") return;
+      const controls = Array.from(dialog.querySelectorAll(
+        'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      ));
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+        event.preventDefault();
+        first?.focus();
       }
     }
-
-    window.addEventListener(
-      "keydown",
-      onKeyDown
-    );
-
-    return () =>
-      window.removeEventListener(
-        "keydown",
-        onKeyDown
-      );
-  }, [open, onClose]);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      background.forEach((element, index) => {
+        if (!previousInert[index]) element.removeAttribute("inert");
+      });
+      if (opener?.isConnected) opener.focus();
+    };
+  }, [open]);
 
   if (!open) {
     return null;
@@ -125,6 +141,7 @@ export default function MethodologyModal({
       onMouseDown={onClose}
     >
       <div
+        ref={dialogRef}
         className="method-modal"
         role="dialog"
         aria-modal="true"

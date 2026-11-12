@@ -64,6 +64,7 @@ export default function usePlayerMatch() {
     projectionLoading,
     loadProjections,
     loadError,
+    reloadPlayers,
   } = usePlayerData();
 
   const [selectedId, setSelectedId] =
@@ -680,6 +681,7 @@ export default function usePlayerMatch() {
     projectionLoading,
     loadProjections,
     loadError,
+    reloadPlayers,
 
     players,
     comparisonPool,

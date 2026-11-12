@@ -30,6 +30,18 @@ export const PROJECTION_TARGETS = Object.keys(
   TARGET_META
 );
 
+function projectionNumber(value) {
+  if (
+    (typeof value !== "number" && typeof value !== "string") ||
+    (typeof value === "string" && !value.trim())
+  ) {
+    return null;
+  }
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+
 export function projectionMeta(key) {
   return TARGET_META[key] ?? {
     label: key,
@@ -46,7 +58,9 @@ export function formatProjectionValue(
     projectionMeta(key);
 
   const numeric =
-    Number(value ?? 0);
+    projectionNumber(value);
+
+  if (numeric === null) return "Unavailable";
 
   const rendered =
     Number.isInteger(numeric)
@@ -67,7 +81,9 @@ export function formatProjectionChange(
     projectionMeta(key);
 
   const numeric =
-    Number(value ?? 0);
+    projectionNumber(value);
+
+  if (numeric === null) return "Unavailable";
 
   const sign =
     numeric > 0
@@ -101,12 +117,16 @@ export function formatProjectionErrorMagnitude(
   value
 ) {
   const numeric =
-    Math.abs(Number(value ?? 0));
+    projectionNumber(value);
+
+  if (numeric === null) return "Unavailable";
+
+  const magnitude = Math.abs(numeric);
 
   const rendered =
-    Number.isInteger(numeric)
-      ? `${numeric}`
-      : numeric.toFixed(1);
+    Number.isInteger(magnitude)
+      ? `${magnitude}`
+      : magnitude.toFixed(1);
 
   return `${rendered} ${projectionErrorUnit(
     key
@@ -118,7 +138,9 @@ export function formatProjectionSignedError(
   value
 ) {
   const numeric =
-    Number(value ?? 0);
+    projectionNumber(value);
+
+  if (numeric === null) return "Unavailable";
 
   const sign =
     numeric > 0
@@ -139,17 +161,15 @@ export function formatProjectionError(
   key,
   value
 ) {
-  return `±${formatProjectionErrorMagnitude(
-    key,
-    value
-  )}`;
+  const magnitude = formatProjectionErrorMagnitude(key, value);
+  return magnitude === "Unavailable" ? magnitude : `±${magnitude}`;
 }
 
 export function projectionErrorBadge(
   target,
   row
 ) {
-  if (!row) {
+  if (!row || projectionNumber(row.historicalErrorBand80) === null) {
     return {
       label: "Error unavailable",
       tone: "neutral",
@@ -181,7 +201,7 @@ export function projectionForPlayer(
 export function projectionDirectionCopy(
   row
 ) {
-  if (!row) {
+  if (!row || projectionNumber(row.projected) === null) {
     return "No projection";
   }
 
@@ -424,9 +444,16 @@ export function projectionComparisonRead(
     return null;
   }
 
-  const leftHigher =
-    Number(leftRow.projected) >=
-    Number(rightRow.projected);
+  const leftEstimate = projectionNumber(leftRow.projected);
+  const rightEstimate = projectionNumber(rightRow.projected);
+  if (leftEstimate === null || rightEstimate === null) {
+    return {
+      headline: "Projection comparison unavailable.",
+      detail: "Both players need valid point estimates before they can be compared.",
+    };
+  }
+
+  const leftHigher = leftEstimate >= rightEstimate;
 
   const leader =
     leftHigher ? left : right;
@@ -437,11 +464,11 @@ export function projectionComparisonRead(
       Number(rightRow.projected)
     );
 
-  const errorBand =
-    Math.max(
-      Number(leftRow.historicalErrorBand80 ?? 0),
-      Number(rightRow.historicalErrorBand80 ?? 0)
-    );
+  const leftError = projectionNumber(leftRow.historicalErrorBand80);
+  const rightError = projectionNumber(rightRow.historicalErrorBand80);
+  const errorBand = leftError !== null && rightError !== null && leftError >= 0 && rightError >= 0
+    ? Math.max(leftError, rightError)
+    : null;
 
   const gapText =
     formatProjectionChange(
@@ -462,6 +489,13 @@ export function projectionComparisonRead(
         ).label.toLowerCase()}.`,
       detail:
         `${detail} Equal point estimates do not imply identical actual outcomes.`,
+    };
+  }
+
+  if (errorBand === null) {
+    return {
+      headline: `${leader.name} has the higher point estimate for ${projectionMeta(target).label.toLowerCase()}.`,
+      detail: `${detail} Historical error is unavailable, so the gap cannot be compared with the model's historical error-band magnitude.`,
     };
   }
 
@@ -494,7 +528,9 @@ export function playerProjectionStory(
   const rows =
     projection?.projections;
 
-  if (!rows) {
+  if (!rows || ["usage", "pts", "ast", "tsPct"].some(
+    (target) => projectionNumber(rows[target]?.change) === null
+  )) {
     return null;
   }
 

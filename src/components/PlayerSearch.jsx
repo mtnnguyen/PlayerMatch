@@ -26,6 +26,9 @@ export default function PlayerSearch({
   const [activeIndex, setActiveIndex] =
     useState(0);
 
+  const [focused, setFocused] = useState(false);
+  const popupOpen = focused && Boolean(query.trim());
+
   const listboxId =
     useId();
 
@@ -59,7 +62,7 @@ export default function PlayerSearch({
 
   useEffect(() => {
     setActiveIndex(0);
-  }, [query]);
+  }, [query, players, excludeId]);
 
   function choose(player) {
     onSelect(player);
@@ -82,6 +85,9 @@ export default function PlayerSearch({
 
   return (
     <div
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
+      }}
       className={`slot-search slot-search--${align}`}
     >
       <Search
@@ -94,6 +100,7 @@ export default function PlayerSearch({
       </label>
 
       <input
+        onFocus={() => setFocused(true)}
         value={query}
         onChange={(event) =>
           setQuery(
@@ -104,23 +111,10 @@ export default function PlayerSearch({
         role="combobox"
         aria-label={label}
         aria-autocomplete="list"
-        aria-expanded={
-          Boolean(
-            query.trim() &&
-              results.length
-          )
-        }
-        aria-controls={
-          query.trim()
-            ? listboxId
-            : undefined
-        }
-        aria-activedescendant={
-          query.trim() &&
-          results[activeIndex]
-            ? `${listboxId}-${results[activeIndex].id}`
-            : undefined
-        }
+        aria-expanded={popupOpen}
+        aria-controls={popupOpen ? listboxId : undefined}
+        aria-activedescendant={popupOpen && results[activeIndex]
+          ? `${listboxId}-${results[activeIndex].id}` : undefined}
         onKeyDown={(event) => {
           if (
             event.key ===
@@ -160,7 +154,7 @@ export default function PlayerSearch({
         }}
       />
 
-      {query.trim() && (
+      {popupOpen && (
         <div
           className="slot-search-menu"
           id={listboxId}
@@ -175,6 +169,8 @@ export default function PlayerSearch({
               ) => (
                 <button
                   type="button"
+                  tabIndex={-1}
+                  onMouseDown={(event) => event.preventDefault()}
                   role="option"
                   aria-selected={
                     index ===

@@ -51,7 +51,12 @@ export function validateProjections(payload) {
       !isRecord(payload.evaluation) || payload.players.some((row) => !hasPlayerIdentity(row) || !isRecord(row.projections))) {
     throw new Error("Projection data is incomplete or unavailable. Please try again.");
   }
+  const ids = new Set();
   for (const player of payload.players) {
+    if (ids.has(player.id)) {
+      throw new Error("Projection data contains duplicate player IDs. Please try again.");
+    }
+    ids.add(player.id);
     if (player.projectionSeason !== undefined && typeof player.projectionSeason !== "string") {
       throw new Error("Player projection season is invalid. Please try again.");
     }

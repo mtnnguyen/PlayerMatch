@@ -34,6 +34,13 @@ describe("dataset validation", () => {
     broken.players[0].pts = null;
     expect(() => validatePlayers(broken)).toThrow();
   });
+  test("rejects conflicting projection records for the same player ID", () => {
+    const ambiguous = structuredClone(projections);
+    const duplicate = structuredClone(ambiguous.players[0]);
+    duplicate.projections.pts.projected += 10;
+    ambiguous.players.push(duplicate);
+    expect(() => validateProjections(ambiguous)).toThrow(/duplicate player IDs/i);
+  });
 });
 
 describe("dataset loading and recovery", () => {
@@ -78,6 +85,23 @@ describe("dataset loading and recovery", () => {
     await act(async () => { await probe.state().loadHistory(); });
     expect(probe.state().historyError).toBe("");
     expect(probe.state().historyAvailable).toBe(true);
+  });
+  test("duplicate projection IDs show an error and a corrected response can be retried", async () => {
+    const ambiguous = structuredClone(projections);
+    ambiguous.players.push(structuredClone(ambiguous.players[0]));
+    const fetcher = vi.fn().mockResolvedValueOnce(response(players))
+      .mockResolvedValueOnce(response(ambiguous)).mockResolvedValueOnce(response(projections));
+    vi.stubGlobal("fetch", fetcher);
+    const probe = mount(); await probe.run();
+    await act(async () => { await probe.state().loadProjections(); });
+    expect(probe.state().projectionError).toMatch(/duplicate player IDs/i);
+    expect(probe.state().projectionsAvailable).toBe(false);
+    expect(probe.state().projectionLoading).toBe(false);
+    await act(async () => { await probe.state().loadProjections(); });
+    expect(probe.state().projectionError).toBe("");
+    expect(probe.state().projectionsAvailable).toBe(true);
+    expect(probe.state().projectionDataset.players).toHaveLength(420);
+    expect(fetcher).toHaveBeenCalledTimes(3);
   });
   test("unmount aborts an unfinished request", async () => {
     let signal;
